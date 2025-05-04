@@ -6,6 +6,7 @@
             "name": "Axolotl Reader",
             "bundleIdentifier": "com.example.mobile",
             "developerName": "Bastien2203",
+            "marketplaceID": "1",
             "subtitle": "An awesome app.",
             "localizedDescription": "This is an awesome app only available on AltStore.",
             "iconURL": "https://raw.githubusercontent.com/Bastien2203/axolotl-reader/refs/heads/main/icon.png",
