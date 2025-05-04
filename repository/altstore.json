@@ -14,8 +14,8 @@
             "screenshots": [],
             "versions": [
                 {
-                    "version": "1.0",
-                    "buildVersion": "1",
+                    "version": "1.0.0",
+                    "buildVersion": "1.0.0",
                     "date": "2025-05-04",
                     "localizedDescription": "First AltStore release!",
                     "downloadURL": "https://raw.githubusercontent.com/Bastien2203/axolotl-reader/refs/heads/main/axolotl-reader-1.0.ipa",
