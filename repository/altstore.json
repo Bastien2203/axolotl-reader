@@ -21,7 +21,7 @@
                     "downloadURL": "https://raw.githubusercontent.com/Bastien2203/axolotl-reader/refs/heads/main/axolotl-reader-1.0.ipa",
                     "size": 79821,
                     "minOSVersion": "12.0",
-                    "maxOSVersion": "18.0"
+                    "maxOSVersion": "18.4.1"
                   }
             ],
             "appPermissions": {}
