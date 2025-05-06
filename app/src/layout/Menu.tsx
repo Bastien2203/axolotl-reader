@@ -40,7 +40,7 @@ const Menu = () => {
   }, []);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-base-300 text-base-content md:flex-row flex-col-reverse">
+    <div className="flex h-screen w-screen bg-base-300 text-base-content md:flex-row flex-col-reverse overflow-hidden overscroll-none scroll-snap-stop">
       <aside className="md:w-64 w-full flex flex-col justify-between border-r border-base-100">
         <div>
           <div className="items-center gap-3 p-4 md:flex hidden">
