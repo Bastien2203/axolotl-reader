@@ -1,5 +1,8 @@
 
 comics.db
 .DS_Store
-covers/
-comics/
+
+api/data
+api/covers
+api/comics.db
+data
