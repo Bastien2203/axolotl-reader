@@ -26,7 +26,7 @@ html, body{
 .safe-area {
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   min-width: 100vw;
-  min-height: 100vh;
+  min-height: 100svh;
 }
 
 

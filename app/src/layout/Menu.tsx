@@ -74,8 +74,7 @@ const Menu = () => {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto h-full md:pb-0 pb-[calc(4rem+env(safe-area-inset-bottom))]">
-            <Outlet />
+      <main className="flex-1 overflow-auto h-full pb-[env(safe-area-inset-bottom)] md:pb-0">            <Outlet />
       </main>
     </div>
   );
