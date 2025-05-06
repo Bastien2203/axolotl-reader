@@ -7,8 +7,8 @@
 
 ```sh
 mkdir -p data/books
-mkdir -p data/covers
-mkdir -p data/comics.db
+mkdir data/covers
+touch data/comics.db
 ```
 
 ```sh

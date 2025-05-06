@@ -40,15 +40,15 @@ const Menu = () => {
   }, []);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-base-300 text-base-content">
-      <aside className="w-64 flex flex-col justify-between border-r border-base-100">
+    <div className="flex h-screen w-screen overflow-hidden bg-base-300 text-base-content md:flex-row flex-col-reverse">
+      <aside className="md:w-64 w-full flex flex-col justify-between border-r border-base-100">
         <div>
-          <div className="flex items-center gap-3 p-4">
+          <div className="items-center gap-3 p-4 md:flex hidden">
             <img src="/icon.png" alt="icon" className="h-12" />
             <h1 className="text-xl font-semibold">Axolotl Reader</h1>
           </div>
 
-          <nav className="flex flex-col gap-1 px-2 ">
+          <nav className="flex md:flex-col md:justify-start w-full justify-around gap-1 px-2 md:py-0 py-2 ">
             {items.map(({ icon, text, href }) => (
               <MenuItem
                 key={text}
@@ -61,7 +61,7 @@ const Menu = () => {
           </nav>
         </div>
 
-      <div className="flex items-center justify-between p-5 text-base-content">
+      <div className="md:flex hidden items-center justify-between p-5 text-base-content">
         <label className="swap swap-rotate hover:opacity-80">
           <input type="checkbox" onChange={() => changeColorScheme()} />
           <Sun className="swap-off h-6 w-6 fill-current"/>
@@ -101,8 +101,9 @@ const MenuItem = ({
         : "hover:bg-base-200 text-base-content"
     }`}
   >
-    <Icon size={20} />
-    <span>{text}</span>
+
+      <Icon size={20}  />
+    <span className="hidden md:block">{text}</span>
   </Link>
 );
 
