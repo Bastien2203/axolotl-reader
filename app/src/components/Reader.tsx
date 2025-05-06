@@ -54,10 +54,10 @@ const Reader = (props: ReaderProps) => {
 
 
 
-    return <div className="absolute top-0 left-0 w-full h-full bg-gray-900">
+    return <div className="absolute z-10 top-0 left-0 w-full h-full bg-gray-900 overflow-scroll">
         {
             overlay &&
-            <div className="fixed bg-black/50 w-full flex justify-between px-4 py-2">
+            <div className="fixed bg-black/50 w-full flex justify-between px-4 py-5">
                 <div>
 
                     <input type="checkbox" defaultChecked className="toggle" />
