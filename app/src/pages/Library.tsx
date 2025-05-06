@@ -16,7 +16,7 @@ const Library = () => {
   const [bookSelected, setBookSelected] = useState<Publication | null>(null);
   const location = useLocation();
   const [deleteModalOpen, setDeleteModalOpen] = useState<string>();
-  const {showToast} = useToast();
+  const { showToast } = useToast();
 
   const locationChangeHandler = () => {
     const url = new URL(window.location.href);
@@ -132,6 +132,14 @@ const Library = () => {
 
   }
 
+  const progressMap = JSON.parse(localStorage.getItem("reader-progress") || "{}");
+  const getBookProgress = (identifier: string) => {
+    if (progressMap[identifier]) {
+      return progressMap[identifier].progress;
+    }
+    return 0;
+  }
+
 
 
   if (bookSelected !== null) {
@@ -173,7 +181,9 @@ const Library = () => {
           <table className="pl-4 table">
             <tbody>
               {standalones.map((book, i) => (
-                <BookRow key={i} book={book} openBook={() => selectBook(book)} onDelete={() => setDeleteModalOpen(book.metadata.identifier)} />
+                <BookRow
+                  progress={getBookProgress(book.metadata.identifier)}
+                  key={i} book={book} openBook={() => selectBook(book)} onDelete={() => setDeleteModalOpen(book.metadata.identifier)} />
               ))}
             </tbody>
           </table>

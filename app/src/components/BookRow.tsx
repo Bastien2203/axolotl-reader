@@ -5,6 +5,7 @@ import SecureImage from "./common/SecureImage";
 
 type BookRowProps = {
     book: Publication;
+    progress: number;
     openBook?: () => void;
     onDelete?: () => void;
 }
@@ -14,12 +15,23 @@ const BookRow = (props: BookRowProps) => {
 
     return <tr className="list-row h-42">
         <td className="h-42 flex justify-between hover:opacity-60 cursor-pointer w-full" onClick={() => props.openBook?.()}>
+            <div className="relative">
             <SecureImage
                 alt={props.book.metadata.title}
-                className="object-cover rounded-md p-1 h-full"
+                className="object-cover rounded-md h-full"
                 url={API_HOST + cover.href}
                 token={localStorage.getItem("token") || ""}
             />
+            {
+                props.progress > 0 &&
+                <progress
+                className="progress progress-primary absolute bottom-0 left-0 w-full z-1"
+                value={props.progress}
+                max={100}/>
+
+            }
+            </div>
+            
 
             <span className="text-base-content flex flex-col items-start justify-center truncate">
             {props.book.metadata.title}
