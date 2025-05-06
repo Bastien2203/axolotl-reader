@@ -21,6 +21,7 @@ const SecureImage = (props: SecureImageProps) => {
           .then((res) => res.blob())
           .then((blob) => {
             const url = URL.createObjectURL(blob);
+
             setImgUrl(url);
           })
           .catch(() => {

@@ -15,22 +15,15 @@ const BookRow = (props: BookRowProps) => {
 
     return <tr className="list-row h-42">
         <td className="h-42 flex justify-between hover:opacity-60 cursor-pointer w-full" onClick={() => props.openBook?.()}>
-            <div className="relative">
-            <SecureImage
+        <SecureImage
                 alt={props.book.metadata.title}
                 className="object-cover rounded-md h-full"
                 url={API_HOST + cover.href}
                 token={localStorage.getItem("token") || ""}
             />
-            {
-                props.progress > 0 &&
-                <progress
-                className="progress progress-primary absolute bottom-0 left-0 w-full z-1"
-                value={props.progress}
-                max={100}/>
 
-            }
-            </div>
+            
+     
             
 
             <span className="text-base-content flex flex-col items-start justify-center truncate">
@@ -38,6 +31,15 @@ const BookRow = (props: BookRowProps) => {
             {props.book.metadata.authors.map((author, i) => (
                 <span key={i} className="text-base-content opacity-60 text-sm">{author.name}</span>
             ))}
+            <br/>
+             {
+                props.progress > 0 &&
+                <progress
+                className="progress progress-primary w-full z-1"
+                value={props.progress}
+                max={100}/>
+
+            }
             </span>
 
             <div></div>
