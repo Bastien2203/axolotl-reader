@@ -1,4 +1,4 @@
-import { use, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { API_HOST, Publication } from "../types"
 import { X } from "lucide-react";
 import JSZip from "jszip";
