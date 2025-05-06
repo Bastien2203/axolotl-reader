@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -82,6 +83,27 @@ func main() {
 	r.GET("/icon.png", func(c *gin.Context) {
 		c.File("./dist/icon.png")
 	})
+
+	r.GET(("/manifest.webmanifest"), func(c *gin.Context) {
+		c.Header("Content-Type", "application/manifest+json")
+		c.File("./dist/manifest.webmanifest")
+	})
+	r.GET("/registerSW.js", func(c *gin.Context) {
+		c.Header("Content-Type", "application/javascript")
+		c.File("./dist/registerSW.js")
+	})
+
+	r.GET("/sw.js", func(c *gin.Context) {
+		c.Header("Content-Type", "application/javascript")
+		c.File("./dist/sw.js")
+	})
+
+	r.GET("/workbox-:hash.js", func(c *gin.Context) {
+		hash := c.Param("hash")
+		file := fmt.Sprintf("./dist/workbox-%s.js", hash)
+		c.File(file)
+	})
+
 	r.Static("/assets", "./dist/assets")
 	r.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", nil)
