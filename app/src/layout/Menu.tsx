@@ -40,8 +40,8 @@ const Menu = () => {
   }, []);
 
   return (
-    <div className="flex h-screen w-screen bg-base-300 text-base-content md:flex-row flex-col-reverse overflow-hidden overscroll-none scroll-snap-stop">
-      <aside className="md:w-64 w-full flex flex-col justify-between border-r border-base-100">
+    <div className="flex h-screen w-screen bg-base-300 text-base-content flex-row overflow-hidden overscroll-none scroll-snap-stop">
+      <aside className="md:w-64 w-full bg-base-300 md:flex md:static fixed bottom-0 z-1 flex-col justify-between border-r border-base-100 ">
         <div>
           <div className="items-center gap-3 p-4 md:flex hidden">
             <img src="/icon.png" alt="icon" className="h-12" />
@@ -75,7 +75,7 @@ const Menu = () => {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto h-full pb-16 md:pb-0">
         <Outlet />
       </main>
     </div>
