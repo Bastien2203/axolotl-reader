@@ -40,9 +40,8 @@ const Menu = () => {
   }, []);
 
   return (
-    <div className="flex h-screen w-screen bg-base-300 text-base-content flex-row overflow-hidden overscroll-none safe-area">
-      <aside className="md:w-64 w-full bg-base-300 md:flex md:static fixed bottom-0 md:z-0 z-1 flex-col justify-between border-r border-base-100 ">
-        <div>
+    <div className="flex h-screen w-screen bg-base-300 text-base-content flex-row overflow-hidden overscroll-none scroll-snap-stop safe-area">
+      <aside className="md:w-64 w-full bg-base-300 md:flex md:static fixed bottom-0 md:z-0 z-1 flex-col justify-between border-r border-base-100 pb-[env(safe-area-inset-bottom)]">        <div>
           <div className="items-center gap-3 p-4 md:flex hidden">
             <img src="/icon.png" alt="icon" className="h-12" />
             <h1 className="text-xl font-semibold">Axolotl Reader</h1>
@@ -75,8 +74,8 @@ const Menu = () => {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto h-full pb-16 md:pb-0">
-        <Outlet />
+      <main className="flex-1 overflow-auto h-full md:pb-0 pb-[calc(4rem+env(safe-area-inset-bottom))]">
+            <Outlet />
       </main>
     </div>
   );
