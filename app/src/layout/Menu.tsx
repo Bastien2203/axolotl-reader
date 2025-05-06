@@ -8,7 +8,7 @@ const items = [
   { icon: LibraryBig, text: "Library", href: "/library" },
   { icon: Import, text: "Import", href: "/import" },
   { icon: Settings, text: "Settings", href: "/settings" },
-  
+
 ];
 
 const Menu = () => {
@@ -27,9 +27,9 @@ const Menu = () => {
 
 
   const location = useLocation();
-  
+
   const changeColorScheme = () => {
-    const theme = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark"; 
+    const theme = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("theme", theme);
   };
@@ -40,8 +40,9 @@ const Menu = () => {
   }, []);
 
   return (
-    <div className="flex bg-base-300 text-base-content flex-row overflow-hidden overscroll-none scroll-snap-stop safe-area">
-      <aside className="md:w-64 w-full bg-base-300 md:flex md:static fixed bottom-0 md:z-0 z-1 flex-col justify-between border-r border-base-100 pb-[env(safe-area-inset-bottom)]">        <div>
+    <div className="flex bg-base-300 text-base-content flex-row overflow-hidden overscroll-none scroll-snap-stop ">
+      <aside className="md:w-64 w-full bg-base-300 md:flex md:static fixed bottom-0 md:z-0 z-1 flex-col justify-between border-r border-base-100">
+        <div>
           <div className="items-center gap-3 p-4 md:flex hidden">
             <img src="/icon.png" alt="icon" className="h-12" />
             <h1 className="text-xl font-semibold">Axolotl Reader</h1>
@@ -60,21 +61,22 @@ const Menu = () => {
           </nav>
         </div>
 
-      <div className="md:flex hidden items-center justify-between p-5 text-base-content">
-        <label className="swap swap-rotate hover:opacity-80">
-          <input type="checkbox" onChange={() => changeColorScheme()} />
-          <Sun className="swap-off h-6 w-6 fill-current"/>
-          <Moon className="swap-on h-6 w-6 fill-current"/>
-        </label>
+        <div className="md:flex hidden items-center justify-between p-5 text-base-content">
+          <label className="swap swap-rotate hover:opacity-80">
+            <input type="checkbox" onChange={() => changeColorScheme()} />
+            <Sun className="swap-off h-6 w-6 fill-current" />
+            <Moon className="swap-on h-6 w-6 fill-current" />
+          </label>
 
-        <LogOut 
-          className="cursor-pointer hover:opacity-80"
-          onClick={() => logout()}
-        />
+          <LogOut
+            className="cursor-pointer hover:opacity-80"
+            onClick={() => logout()}
+          />
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto h-full pb-[env(safe-area-inset-bottom)] md:pb-0">            <Outlet />
+      <main className="flex-1 overflow-auto h-full pb-16 md:pb-0">
+        <Outlet />
       </main>
     </div>
   );
@@ -93,14 +95,13 @@ const MenuItem = ({
 }) => (
   <Link
     to={href}
-    className={`flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${
-      selected
+    className={`flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${selected
         ? "bg-base-100 font-medium"
         : "hover:bg-base-200 text-base-content"
-    }`}
+      }`}
   >
 
-      <Icon size={20}  />
+    <Icon size={20} />
     <span className="hidden md:block">{text}</span>
   </Link>
 );

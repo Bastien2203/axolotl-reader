@@ -6,6 +6,7 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
+  
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
 }
@@ -22,11 +23,12 @@ html, body{
   overflow: hidden;
 }
 
-
-.safe-area {
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+body{
   min-width: 100vw;
-  min-height: 100svh;
+  min-height: calc(100% + env(safe-area-inset-top) + env(safe-area-inset-bottom));
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+
+  @apply bg-base-300
 }
 
 
