@@ -9,6 +9,7 @@ type BookRowProps = {
     openBook?: () => void;
     onDelete?: () => void;
     download?: () => void;
+    markAsRead?: () => void;
 }
 
 const BookRow = (props: BookRowProps) => {
@@ -65,9 +66,19 @@ const BookRow = (props: BookRowProps) => {
                     }
 
                     {
+                        props.markAsRead && props.progress !== 100 && 
+                        <li>
+                            <a onClick={() => props.markAsRead?.()}>
+                                Mark as Read
+                            </a>
+                        </li>
+                    }
+
+                    {
                         props.onDelete &&
                         <li className="bg-red-400/50 rounded"><a onClick={() => props.onDelete?.()}>Delete</a></li>
                     }
+
 
 
                 </ul>

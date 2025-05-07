@@ -42,6 +42,19 @@ const BookTable = (props: BookTableProps) => {
         }
     }
 
+    const markAsRead = (identifier: string) => {
+        const progress = progressMap[identifier];
+        if (progress) {
+            progressMap[identifier].progress = 100;
+        } else {
+            progressMap[identifier] = {
+                progress: 100,
+            }
+        }
+            localStorage.setItem("reader-progress", JSON.stringify(progressMap));
+
+    }
+
     useEffect(() => {
         if (props.books.length === 0) return;
         locationChangeHandler();
@@ -68,6 +81,7 @@ const BookTable = (props: BookTableProps) => {
                         openBook={() => showReader({
                             book,
                         })}
+                        markAsRead={() => markAsRead(book.metadata.identifier)}
                         onDelete={() => setDeleteModalOpen(book.metadata.identifier)}
                         download={book.links.find((link) => link.rel === "acquisition")?.type.startsWith("blob+") ? undefined :
                             () => downloadBook(book, (message: string) => {
