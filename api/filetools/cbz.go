@@ -7,16 +7,18 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
-	"log"
+
 	"strings"
 
+	"github.com/Bastien2203/comics-reader/log"
 	_ "golang.org/x/image/webp"
 )
 
 func GetFirstImageFromCBZ(path string) image.Image {
 	r, err := zip.OpenReader(path)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return nil
 	}
 	defer r.Close()
 

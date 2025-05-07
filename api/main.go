@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Bastien2203/comics-reader/cover_queue"
 	"github.com/Bastien2203/comics-reader/middleware"
 	"github.com/Bastien2203/comics-reader/models"
 	"github.com/Bastien2203/comics-reader/routes/books"
@@ -19,6 +20,7 @@ import (
 )
 
 func main() {
+	cover_queue.StartWorker()
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")

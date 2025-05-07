@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/Bastien2203/comics-reader/filetools"
+	"github.com/Bastien2203/comics-reader/cover_queue"
 	"github.com/Bastien2203/comics-reader/log"
 	"github.com/Bastien2203/comics-reader/models"
 	"github.com/gin-gonic/gin"
@@ -77,16 +77,11 @@ func Upload(db *gorm.DB, c *gin.Context) {
 	bookUrl := "/books/" + identifier + ".cbz"
 
 	if useFirstPageAsCover == "true" {
-		cover := filetools.GetFirstImageFromCBZ(bookPath)
-		if cover == nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to extract cover from book"})
-			return
-		}
 		coverPath = filepath.Join(os.Getenv("COVER_DIRECTORY"), identifier+".png")
-		if err := filetools.SaveImage(cover, coverPath); err != nil {
-			log.Error(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save cover"})
-			return
+		cover_queue.Queue <- cover_queue.CoverJob{
+			Identifier: identifier,
+			BookPath:   bookPath,
+			OutputPath: coverPath,
 		}
 		coverUrl = "/covers/" + identifier + ".png"
 	}
