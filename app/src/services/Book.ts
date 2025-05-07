@@ -1,7 +1,4 @@
-import { href } from "react-router-dom";
 import { API_HOST, Publication } from "../types";
-import { resolve } from "path";
-import { rejects } from "assert";
 
 
 export const deleteBook = (
