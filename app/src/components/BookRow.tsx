@@ -8,6 +8,7 @@ type BookRowProps = {
     progress: number;
     openBook?: () => void;
     onDelete?: () => void;
+    download?: () => void;
 }
 
 const BookRow = (props: BookRowProps) => {
@@ -15,31 +16,33 @@ const BookRow = (props: BookRowProps) => {
 
     return <tr className="list-row h-42">
         <td className="h-42 flex justify-between hover:opacity-60 cursor-pointer w-full" onClick={() => props.openBook?.()}>
-        <SecureImage
-                alt={props.book.metadata.title}
-                className="object-cover rounded-md h-full"
-                url={API_HOST + cover.href}
-                token={localStorage.getItem("token") || ""}
-            />
+            {
+                cover && (
+                    <SecureImage
+                        alt={props.book.metadata.title}
+                        className="object-cover rounded-md h-full p-1"
+                        url={API_HOST + cover.href}
+                        token={localStorage.getItem("token") || ""}
+                    />
+                )
+            }
 
-            
-     
-            
+
 
             <span className="text-base-content flex flex-col items-start justify-center truncate">
-            {props.book.metadata.title}
-            {props.book.metadata.authors.map((author, i) => (
-                <span key={i} className="text-base-content opacity-60 text-sm">{author.name}</span>
-            ))}
-            <br/>
-             {
-                props.progress > 0 &&
-                <progress
-                className="progress progress-primary w-full z-1"
-                value={props.progress}
-                max={100}/>
+                {props.book.metadata.title}
+                {props.book.metadata.authors.map((author, i) => (
+                    <span key={i} className="text-base-content opacity-60 text-sm">{author.name}</span>
+                ))}
+                <br />
+                {
+                    props.progress > 0 &&
+                    <progress
+                        className="progress progress-primary w-full z-1"
+                        value={props.progress}
+                        max={100} />
 
-            }
+                }
             </span>
 
             <div></div>
@@ -52,8 +55,21 @@ const BookRow = (props: BookRowProps) => {
                 </div>
                 <ul tabIndex={0} className="dropdown-content z-50 menu p-2 shadow bg-base-100 rounded-box w-40 pointer-events-auto">
                     <li><a onClick={() => props.openBook?.()}>Open</a></li>
+                    {
+                        props.download &&
+                        <li>
+                            <a onClick={() => props.download?.()}>
+                                Download
+                            </a>
+                        </li>
+                    }
 
-                    <li className="bg-red-400/50 rounded"><a onClick={() => props.onDelete?.()}>Delete</a></li>
+                    {
+                        props.onDelete &&
+                        <li className="bg-red-400/50 rounded"><a onClick={() => props.onDelete?.()}>Delete</a></li>
+                    }
+
+
                 </ul>
             </div>
         </td>

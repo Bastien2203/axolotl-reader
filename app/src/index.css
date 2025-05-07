@@ -36,3 +36,11 @@ body{
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+.pt-safe{
+  padding-top: env(safe-area-inset-top);
+}
+
+.pt-safe-1{
+  padding-top: calc(env(safe-area-inset-top) + 1em);
+}
+

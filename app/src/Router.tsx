@@ -5,6 +5,7 @@ import ImportBook from "./pages/ImportBook"
 import Library from "./pages/Library"
 import Login from "./pages/Login"
 import Settings from "./pages/Settings"
+import Downloads from "./pages/Downloads"
 
 
 const Router = () => {
@@ -33,6 +34,10 @@ const Router = () => {
                 {
                     path: "/settings",
                     element: <Settings />
+                },
+                {
+                    path: "/downloads",
+                    element: <Downloads/>
                 }
             ]
         }
