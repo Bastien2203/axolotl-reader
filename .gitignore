@@ -6,3 +6,4 @@ api/data
 api/covers
 api/comics.db
 data
+api/dist

@@ -31,6 +31,29 @@ export default defineConfig({
             type: 'image/png'
           }
         ]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,png,svg,webmanifest}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*\.(?:png|jpg|jpeg|svg|webp|woff2?)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'assets-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30j
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/.*\.(?:json|js|css|html)$/,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'static-cache',
+            }
+          }
+        ]
       }
     })
   ],
