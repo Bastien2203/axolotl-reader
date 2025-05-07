@@ -58,7 +58,7 @@ const Downloads = () => {
     useEffect(() => {
         const request = indexedDB.open('downloaded-books', 1);
         
-        request.onupgradeneeded = (event) => {
+        request.onupgradeneeded = () => {
             const db = request.result;
             if (!db.objectStoreNames.contains('books')) {
                 db.createObjectStore('books', { keyPath: 'identifier' });
