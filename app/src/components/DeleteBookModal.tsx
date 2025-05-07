@@ -3,7 +3,7 @@ import { useToast } from "../contexts/ToastContext";
 import Modal from "./common/Modal";
 import Spinner from "./common/Spinner";
 import { Publication } from "../types";
-import { deleteBook } from "../services/Book";
+import { deleteBook, deleteDownloadedBook } from "../services/Book";
 
 
 type DeleteBookModalProps = {
@@ -36,9 +36,44 @@ const DeleteBookModal = (props: DeleteBookModalProps) => {
             setLoading(false);
             props.setDeleteModalOpen(undefined);
         }
-
+        const book = props.books.find((book) => book.metadata.identifier === bookId);
+        if (!book) {
+            showToast({
+                message: "Book not found",
+                type: "alert-error",
+            });
+            return;
+        }
+        const acquisitionLink = book.links.find((link) => link.rel === "acquisition");
+        if (!acquisitionLink) {
+            showToast({
+                message: "Book not found",
+                type: "alert-error",
+            });
+            return;
+        }
+        const blobLink = acquisitionLink.type.startsWith("blob+");
         setLoading(true);
-        deleteBook(bookId, onSuccess, onError, onFinish);        
+
+        if (blobLink) {
+            deleteDownloadedBook(bookId).then(() => {
+                showToast({
+                    message: "Book deleted successfully",
+                    type: "alert-success",
+                });
+                props.setBooks(props.books.filter((book) => book.metadata.identifier !== bookId));
+            }).catch((err) => {
+                console.error(err);
+                showToast({
+                    message: "Failed to delete book",
+                    type: "alert-error",
+                });
+            });
+        }else {
+            deleteBook(bookId, onSuccess, onError, onFinish);        
+        }
+
+
     }
 
     useEffect(() => {

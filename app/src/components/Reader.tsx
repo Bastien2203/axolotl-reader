@@ -6,7 +6,6 @@ import JSZip from "jszip";
 
 type ReaderProps = {
     book: Publication;
-    isBlob?: boolean;
     onClose?: () => void;
     onNext?: () => void;
     onPrev?: () => void;
@@ -21,8 +20,13 @@ const Reader = (props: ReaderProps) => {
 
     useEffect(() => {
         setLoading("Loading book...");
-        const link = props.book.links.filter(link => link.rel === "acquisition")[0]
-        fetch((props.isBlob ? "" : API_HOST) + link.href, {
+        const link = props.book.links.find(link => link.rel === "acquisition");
+        if (!link) {
+            throw new Error("No acquisition link found");
+        }
+
+        const fetchUrl = link.type.startsWith("blob+") ? URL.createObjectURL(link.href as unknown as Blob) : API_HOST + link.href;
+        fetch(fetchUrl, {
             method: "GET",
             headers: {
                 "Accept": link.type,
@@ -31,59 +35,41 @@ const Reader = (props: ReaderProps) => {
             }
         }).then((res) => {
             if (res.status === 200) {
-                return res.blob()
+                return res.blob();
             } else {
-                throw new Error("Failed to fetch book")
+                throw new Error("Failed to fetch book");
             }
         }).then((blob) => {
             setLoading("Unpacking images...");
-            JSZip.loadAsync(blob).then((zip) => {
-                const imagePromises: Promise<string>[] = [];
-                zip.forEach((_, file) => {
-                    if (/\.(jpe?g|png|gif)$/i.test(file.name)) {
-                        const promise = file.async('blob').then((blob) => {
-                            return URL.createObjectURL(blob);
-                        });
-                        imagePromises.push(promise);
-                    }
-                });
-                setLoading("Creating blobs...");
-                Promise.all(imagePromises).then((urls) => {
-                    setImages(urls);
-                    setLoading(null);
-                });
+            return JSZip.loadAsync(blob);
+        }).then((zip) => {
+            const imagePromises: Promise<string>[] = [];
+            zip.forEach((_, file) => {
+                if (/\.(jpe?g|png|gif)$/i.test(file.name)) {
+                    const promise = file.async('blob').then((blob) => {
+                        return URL.createObjectURL(blob);
+                    });
+                    imagePromises.push(promise);
+                }
             });
+            setLoading("Creating blobs...");
+            return Promise.all(imagePromises);
+        }).then((urls) => {
+            setImages(urls);
+            setLoading(null);
+        }).catch((error) => {
+            console.error("Error loading book:", error);
+            setLoading("Failed to load book");
+        });
 
-        })
-
-        const el = scrollRef.current;
-        if (!el) return;
-
-        const handleScroll = () => {
-            const { scrollTop, scrollHeight, clientHeight } = el;
-            const percent = (scrollTop / (scrollHeight - clientHeight)) * 100;
-            setProgress(Math.min(100, Math.max(0, percent)));
-            const p = JSON.parse(localStorage.getItem("reader-progress") || "{}");
-            p[props.book.metadata.identifier] = {
-                scrollTop: scrollTop,
-                progress: percent.toFixed(2),
-            };
-            localStorage.setItem("reader-progress", JSON.stringify(p));
-        };
-
-        el.addEventListener("scroll", handleScroll);
-        return () => el.removeEventListener("scroll", handleScroll);
+        return () => {
+            // revoke object URLs to free memory
+            if (fetchUrl.startsWith("blob:")) {
+                URL.revokeObjectURL(fetchUrl);
+            }
+        }
     }, [])
 
-
-    useEffect(() => {
-        const p = JSON.parse(localStorage.getItem("reader-progress") || "{}");
-        if (p[props.book.metadata.identifier]) {
-            const el = scrollRef.current;
-            if (!el) return;
-            el.scrollTop = p[props.book.metadata.identifier].scrollTop;
-        }
-    }, [images]);
 
     useEffect(() => {
         let timeout: NodeJS.Timeout;
@@ -97,18 +83,83 @@ const Reader = (props: ReaderProps) => {
         }
     }, [overlay, loading])
 
+    useEffect(() => {
+        if (images.length === 0) return;
+
+        let loaded = 0;
+        const imgs = Array.from(document.querySelectorAll('.reader-image')) as HTMLImageElement[];
+
+        imgs.forEach(img => {
+            if (img.complete) {
+                loaded++;
+            } else {
+                img.onload = () => {
+                    loaded++;
+                    if (loaded === imgs.length) {
+                        return attachObserver();
+                    }
+                };
+            }
+        });
+
+        if (loaded === imgs.length) {
+            return attachObserver();
+        }
+
+        function attachObserver() {
+            const saved = JSON.parse(localStorage.getItem("reader-progress") || "{}");
+            const progressData = saved[props.book.metadata.identifier];
+            if (progressData) {
+                const savedIndex = Math.floor((progressData.progress / 100) * images.length);
+                setTimeout(() => {
+                    const target = document.querySelector(`.reader-image[data-index="${savedIndex}"]`);
+                    if (target && scrollRef.current) {
+                        scrollRef.current.scrollTo({
+                            top: (target as HTMLElement).offsetTop,
+                            behavior: "auto", 
+                        });
+                    }
+                }, 0); 
+            }
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const index = parseInt(entry.target.getAttribute('data-index') || '0');
+                        const progressMap = JSON.parse(localStorage.getItem("reader-progress") || "{}");
+                        const progress = (index / images.length) * 100;
+                        progressMap[props.book.metadata.identifier] = {
+                            progress: progress,
+                        };
+                        localStorage.setItem("reader-progress", JSON.stringify(progressMap));
+                        setProgress(progress);
+                    }
+                });
+            }, {
+                root: scrollRef.current,
+                threshold: 0.5, // Trigger when 50% of the image is visible
+            });
+    
+            document.querySelectorAll('.reader-image').forEach(img => observer.observe(img));
+            
+            return () => observer.disconnect();
+        }
+        
+    }, [images]);
+
+
     const showOverlay = () => setOverlay(true);
 
     if (loading !== null) {
-        return <div className="w-screen h-screen flex flex-col items-center justify-center overflow-hidden">
-        <span className="loading loading-spinner loading-xl"></span>
-        {loading}
-    </div>
+        return <div className="absolute z-10 top-0 left-0 bg-base-300 w-screen h-screen flex flex-col items-center justify-center overflow-hidden">
+            <span className="loading loading-spinner loading-xl"></span>
+            {loading}
+        </div>
     }
 
 
     return <div
-        className="absolute z-10 top-0 left-0 w-full h-full bg-gray-900 overflow-scroll"
+        className="absolute z-10 top-0 left-0 w-full h-full bg-base-300 overflow-scroll"
         ref={scrollRef}
         onClick={() => showOverlay()}
         onTouchStart={() => showOverlay()}
@@ -129,11 +180,15 @@ const Reader = (props: ReaderProps) => {
 
         <div className="flex flex-col items-center justify-start h-full">
             {images.map((src, i) => (
-                <img key={i} src={src} alt={`Page ${i + 1}`} style={{ width: '100%' }} />
+                <img
+                    data-index={i}
+                    key={i}
+                    src={src}
+                    alt={`Page ${i + 1}`}
+                    style={{ width: '100%' }}
+                    className="reader-image" />
             ))}
         </div>
-
-
     </div>
 }
 

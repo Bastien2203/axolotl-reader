@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { API_HOST, Publication } from "../types";
 import Series from "../components/Series";
-import Reader from "../components/Reader";
 import { useLocation } from "react-router-dom";
-import BookRow from "../components/BookRow";
 import DeleteBookModal from "../components/DeleteBookModal";
 import { useToast } from "../contexts/ToastContext";
+import BookTable from "../components/BookTable";
 
 
 
@@ -13,7 +12,6 @@ const Library = () => {
   const [seriesMap, setSeriesMap] = useState<Record<string, Publication[]>>({});
   const [standalones, setStandalones] = useState<Publication[]>([]);
   const [serieSelected, setSerieSelected] = useState<string | null>(null);
-  const [bookSelected, setBookSelected] = useState<Publication | null>(null);
   const location = useLocation();
   const [deleteModalOpen, setDeleteModalOpen] = useState<string>();
   const { showToast } = useToast();
@@ -21,31 +19,11 @@ const Library = () => {
   const locationChangeHandler = () => {
     const url = new URL(window.location.href);
     const seriesName = url.searchParams.get("series");
-    const bookId = url.searchParams.get("book");
-
-    if (bookId) {
-      let foundBook: Publication | undefined;
-      for (const books of Object.values(seriesMap)) {
-        foundBook = books.find((pub) => pub.metadata.identifier === bookId);
-        if (foundBook) break;
-      }
-
-      if (!foundBook) {
-        foundBook = standalones.find((pub) => pub.metadata.identifier === bookId);
-      }
-
-      if (foundBook) {
-        setBookSelected(foundBook);
-        return;
-      }
-    }
 
     if (seriesName && seriesMap[seriesName]) {
       setSerieSelected(seriesName);
-      setBookSelected(null);
     } else {
       setSerieSelected(null);
-      setBookSelected(null);
     }
   };
 
@@ -98,7 +76,7 @@ const Library = () => {
   useEffect(() => {
     if (standalones.length === 0 && Object.keys(seriesMap).length === 0) return;
     locationChangeHandler();
-  }, [standalones, seriesMap, bookSelected]);
+  }, [standalones, seriesMap]);
 
   useEffect(() => {
     locationChangeHandler();
@@ -118,36 +96,8 @@ const Library = () => {
     window.history.pushState({}, "", url.toString());
   };
 
-  const selectBook = (book: Publication) => {
-    setBookSelected(book);
-    const url = new URL(window.location.href);
-    url.searchParams.set("book", book.metadata.identifier);
-    window.history.pushState({}, "", url.toString());
-  }
-  const backToSeries = () => {
-    setBookSelected(null);
-    const url = new URL(window.location.href);
-    url.searchParams.delete("book");
-    window.history.pushState({}, "", url.toString());
-
-  }
-
-  const progressMap = JSON.parse(localStorage.getItem("reader-progress") || "{}");
-  const getBookProgress = (identifier: string) => {
-    if (progressMap[identifier]) {
-      return progressMap[identifier].progress;
-    }
-    return 0;
-  }
-
-
-
-  if (bookSelected !== null) {
-    return <Reader onClose={backToSeries} book={bookSelected} onNext={() => { }} onPrev={() => { }} />
-  }
-
   if (serieSelected !== null) {
-    return <Series seriesName={serieSelected} books={seriesMap[serieSelected]} onBack={backToLibrary} openBook={selectBook} setBooks={
+    return <Series seriesName={serieSelected} books={seriesMap[serieSelected]} onBack={backToLibrary} setBooks={
       (books: Publication[]) => {
         setSeriesMap((prev) => ({
           ...prev,
@@ -178,15 +128,7 @@ const Library = () => {
       {standalones.length > 0 && (
         <div>
           <h3 className="text-xl font-semibold">One-shots / Standalone</h3>
-          <table className="pl-4 table">
-            <tbody>
-              {standalones.map((book, i) => (
-                <BookRow
-                  progress={getBookProgress(book.metadata.identifier)}
-                  key={i} book={book} openBook={() => selectBook(book)} onDelete={() => setDeleteModalOpen(book.metadata.identifier)} />
-              ))}
-            </tbody>
-          </table>
+          <BookTable books={standalones} setBooks={setStandalones}/>
         </div>
       )}
     </div>

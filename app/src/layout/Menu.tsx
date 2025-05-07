@@ -7,8 +7,8 @@ const items = [
   { icon: Home, text: "Home", href: "/" },
   { icon: LibraryBig, text: "Library", href: "/library" },
   { icon: Import, text: "Import", href: "/import" },
+  { icon: Download, text: "Downloads", href: "/downloads" },
   { icon: Settings, text: "Settings", href: "/settings" },
-  {icon: Download, text: "Downloads", href: "/downloads"},
 
 ];
 
