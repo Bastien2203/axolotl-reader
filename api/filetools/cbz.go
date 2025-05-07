@@ -4,10 +4,13 @@ import (
 	"archive/zip"
 	"bytes"
 	"image"
+	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
 	"log"
 	"strings"
+
+	_ "golang.org/x/image/webp"
 )
 
 func GetFirstImageFromCBZ(path string) image.Image {
@@ -44,5 +47,9 @@ func GetFirstImageFromCBZ(path string) image.Image {
 
 func isImageFile(name string) bool {
 	name = strings.ToLower(name)
-	return strings.HasSuffix(name, ".jpg") || strings.HasSuffix(name, ".jpeg") || strings.HasSuffix(name, ".png") || strings.HasSuffix(name, ".gif")
+	return strings.HasSuffix(name, ".jpg") ||
+		strings.HasSuffix(name, ".jpeg") ||
+		strings.HasSuffix(name, ".png") ||
+		strings.HasSuffix(name, ".gif") ||
+		strings.HasSuffix(name, ".webp")
 }
