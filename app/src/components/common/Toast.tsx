@@ -7,7 +7,7 @@ type ToastProps = {
 
 
 const Toast = (props: ToastProps) => (
-<div className="toast">
+<div className="toast z-50">
   <div className={`alert ${props.type} animate-fade-in`}>
     <span>{props.message}</span>
   </div>

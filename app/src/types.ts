@@ -31,3 +31,10 @@ export type Facets = {
 
 const env = import.meta.env.VITE_APP_ENV;
 export const API_HOST = env == "production" ? "" :  "http://localhost:8080";
+
+export type Me = {
+    ID: string;
+    Username: string;
+    Role: "user" | "admin";
+
+}

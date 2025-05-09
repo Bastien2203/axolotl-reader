@@ -6,6 +6,7 @@ import Library from "./pages/Library"
 import Login from "./pages/Login"
 import Settings from "./pages/Settings"
 import Downloads from "./pages/Downloads"
+import CreateUser from "./pages/settings/CreateUser"
 
 
 const Router = () => {
@@ -33,7 +34,16 @@ const Router = () => {
                 }, 
                 {
                     path: "/settings",
-                    element: <Settings />
+                    children: [
+                        {
+                            path: "",
+                            element: <Settings />
+                        },
+                        {
+                            path: "create-user",
+                            element: <CreateUser />
+                        }
+                    ]
                 },
                 {
                     path: "/downloads",

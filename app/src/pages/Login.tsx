@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useToast } from "../contexts/ToastContext";
 import Spinner from "../components/common/Spinner";
 import { API_HOST } from "../types";
+import { useNavigate } from "react-router-dom";
 
 
 const Login = () => {
@@ -10,6 +11,7 @@ const Login = () => {
     const { showToast } = useToast();
     const [canRegister, setCanRegister] = useState<boolean | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -52,7 +54,7 @@ const Login = () => {
             .then((data) => {
                 if (data) {
                     localStorage.setItem("token", data.token);
-                    window.location.href = "/";
+                    navigate("/")
                 }
             })
             .catch(() => {

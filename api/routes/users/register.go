@@ -49,6 +49,11 @@ func Register(db *gorm.DB, c *gin.Context) {
 		return
 	}
 
+	if user.Username == "" || user.Password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Username and password are required"})
+		return
+	}
+
 	// if first user, set admin role
 	if count == 0 {
 		user.Role = "admin"
@@ -62,7 +67,7 @@ func Register(db *gorm.DB, c *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenerateJWT(user.ID)
+	token, err := utils.GenerateJWT(user.ID, user.Role)
 	if err != nil {
 		log.Error(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})

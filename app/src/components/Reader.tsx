@@ -45,7 +45,7 @@ const Reader = (props: ReaderProps) => {
         }).then((zip) => {
             const imagePromises: Promise<string>[] = [];
             zip.forEach((_, file) => {
-                if (/\.(jpe?g|png|gif)$/i.test(file.name)) {
+                if (/\.(jpe?g|png|gif|webp)$/i.test(file.name)) {
                     const promise = file.async('blob').then((blob) => {
                         return URL.createObjectURL(blob);
                     });
@@ -129,7 +129,7 @@ const Reader = (props: ReaderProps) => {
                         const progressMap = JSON.parse(localStorage.getItem("reader-progress") || "{}");
                         const progress = (index / images.length) * 100;
                         progressMap[props.book.metadata.identifier] = {
-                            progress: progress,
+                            progress: progress
                         };
                         localStorage.setItem("reader-progress", JSON.stringify(progressMap));
                         setProgress(progress);

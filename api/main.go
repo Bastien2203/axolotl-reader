@@ -79,6 +79,7 @@ func main() {
 		usersGroup.POST("/login", func(c *gin.Context) { users.Login(db, c) })
 		usersGroup.POST("/register", func(c *gin.Context) { users.Register(db, c) })
 		usersGroup.GET("/can_register", func(c *gin.Context) { users.CanRegister(db, c) })
+		usersGroup.GET("/me", middleware.AuthRequired, func(c *gin.Context) { users.Me(db, c) })
 	}
 
 	r.LoadHTMLFiles("./dist/index.html")

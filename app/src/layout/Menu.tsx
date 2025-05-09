@@ -1,6 +1,6 @@
 import { Download, Home, Import, LibraryBig, LogOut, Moon, Settings, Sun } from "lucide-react";
 import { useEffect } from "react";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 
 const items = [
@@ -13,11 +13,12 @@ const items = [
 ];
 
 const Menu = () => {
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      window.location.href = "/login";
+      navigate("/login");
     }
   }, []);
 
