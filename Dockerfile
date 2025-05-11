@@ -1,17 +1,19 @@
-# --------- Front build (Node + Vite) ---------
+# --------- Front (Node + Vite) ---------
 FROM node:22.15-bullseye AS node-builder
 
 WORKDIR /app
 
 COPY app/package*.json ./
 RUN apt-get update && apt-get install -y python3 make g++
-RUN npm install --ignore-scripts && npm rebuild
+
+ENV TAILWIND_MODE=build
+RUN npm install --ignore-scripts --build-from-source && npm rebuild
 
 COPY app/ .
 RUN npm run build
+    
 
-
-# --------- Backend build (Go) ---------
+# --------- Backend (Go) ---------
 FROM golang:1.23-bullseye AS go-builder
 
 WORKDIR /app
@@ -31,11 +33,11 @@ FROM debian:bullseye-slim
 
 WORKDIR /app
 
-# Copie binaire Go + config
+# Copy Go binary and env
 COPY --from=go-builder /app/api ./api
 COPY --from=go-builder /app/.env ./.env
 
-# Copie frontend précompilé
+# Copy Node build
 COPY --from=node-builder /app/dist ./dist
 
 # Runtime deps minimal
