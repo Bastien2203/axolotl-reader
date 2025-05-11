@@ -1,18 +1,19 @@
-name: Build and Push Docker image for Raspberry Pi
+name: Build & Push Docker Image (Multi-Arch)
 
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up QEMU
+      - name: Set up QEMU for cross-platform builds
         uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
@@ -25,10 +26,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image (multi-arch)
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/arm/v7
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm/v7
           push: true
           tags: ghcr.io/bastien2203/axolotl-reader:latest
