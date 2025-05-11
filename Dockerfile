@@ -1,4 +1,4 @@
-FROM node:22.15-alpine AS node-builder
+FROM node:22.15-bullseye AS node-builder
 
 WORKDIR /app
 
