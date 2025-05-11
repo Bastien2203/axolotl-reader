@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 import { useToast } from "../../contexts/ToastContext"
 import TopNavigationBar from "../../layout/TopNavigationBar"
 import { API_HOST } from "../../types"

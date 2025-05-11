@@ -1,4 +1,3 @@
-import { ArrowLeft } from "lucide-react";
 import { Publication } from "../types";
 import BookTable from "./BookTable";
 import TopNavigationBar from "../layout/TopNavigationBar";
