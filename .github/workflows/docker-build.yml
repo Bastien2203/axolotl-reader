@@ -31,4 +31,4 @@ jobs:
           context: .
           platforms: linux/arm/v7
           push: true
-          tags: ghcr.io/${{ github.repository }}:latest
+          tags: ghcr.io/bastien2203/axolotl-reader:latest
