@@ -1,19 +1,17 @@
-# --------- Front (Node + Vite) ---------
+# --------- Front build (Node + Vite) ---------
 FROM node:22.15-bullseye AS node-builder
 
 WORKDIR /app
 
 COPY app/package*.json ./
 RUN apt-get update && apt-get install -y python3 make g++
-
-ENV TAILWIND_MODE=build
-RUN npm install --ignore-scripts --build-from-source && npm rebuild
+RUN npm install --ignore-scripts && npm rebuild
 
 COPY app/ .
 RUN npm run build
-    
 
-# --------- Backend (Go) ---------
+
+# --------- Backend build (Go) ---------
 FROM golang:1.23-bullseye AS go-builder
 
 WORKDIR /app
