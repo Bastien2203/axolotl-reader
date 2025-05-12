@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y python3 make g++
 RUN npm install --ignore-scripts && npm rebuild
 
 COPY app/ .
-RUN npm run build
+RUN OXIDE_DISABLE_NATIVE=1 npm run build
 
 
 # --------- Backend build (Go) ---------
