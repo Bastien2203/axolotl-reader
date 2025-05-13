@@ -8,7 +8,7 @@ type PageLayoutProps = {
 
 const PageLayout = (props: PropsWithChildren<PageLayoutProps>) => (
     <>
-        <div className="bg-base-300 p-4 flex items-center gap-4 fixed z-10 w-full pt-safe-1">
+        <div className="bg-base-300 p-4 flex items-center gap-4 fixed z-10 w-full pt-safe">
             {
                 props.onBack && <button
                     onClick={props.onBack}
