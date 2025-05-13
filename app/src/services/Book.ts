@@ -289,8 +289,8 @@ export const setBookProgress = (identifier: string, progress: number) => {
     localStorage.setItem("reader-progress", JSON.stringify(progressMap));
 }
 
-export const getLastReadBook = (): Promise<Publication> => {
-    return new Promise<Publication>((resolve, reject) => {
+export const getLastReadBook = (): Promise<Publication | null> => {
+    return new Promise<Publication | null>((resolve, reject) => {
         const progressMap = JSON.parse(localStorage.getItem("reader-progress") || "{}") as Record<string, BookProgress>;
         const lastReadBooks = Object.entries(progressMap)
             .filter(([_, progress]) => progress.progress < 100) 
@@ -313,7 +313,7 @@ export const getLastReadBook = (): Promise<Publication> => {
                 reject("Error fetching book");
             });
         } else {
-            reject("No books found");
+            resolve(null);
         }
     })
 }

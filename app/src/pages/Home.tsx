@@ -107,10 +107,6 @@ const Home = () => {
           <h3>{lastRead.metadata.title}</h3>
         </div>
       </> }
-      
-
-
-
 
       <h2 className="text-xl font-semibold">Series</h2>
       {series.map((seriesName) => (
