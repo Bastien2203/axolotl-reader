@@ -41,6 +41,8 @@ func GetSeries(db *gorm.DB, c *gin.Context) {
 		Offset(fromInt).
 		Where("series_name = ?", seriesName).
 		Order("series_position ASC").
+		Preload("Authors").
+		Preload("Tags").
 		Find(&comics)
 
 	var total int64
