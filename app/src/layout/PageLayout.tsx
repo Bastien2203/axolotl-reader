@@ -25,8 +25,7 @@ const PageLayout = (props: PropsWithChildren<PageLayoutProps>) => (
 
             <h1 className="text-2xl font-bold">{props.title}</h1>
         </div>
-        <div className={`p-4 space-y-6 mt-[5.5rem] pb-[10em] overflow-auto h-full`}>
-            {
+        <div className="p-4 space-y-6 mt-[5.5rem] pb-[10em] overflow-auto" style={{ height: "calc(100dvh - 5.5rem)" }}>            {
                 props.children
             }
         </div>

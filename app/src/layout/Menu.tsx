@@ -76,7 +76,7 @@ const Menu = () => {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-hidden h-screen pb-16 md:pb-0">
+      <main className="flex-1 h-screen overflow-hidden pb-16 md:pb-0">
         <Outlet />
       </main>
     </div>

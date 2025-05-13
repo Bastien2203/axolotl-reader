@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import { Publication } from "../types";
-import Reader from "../components/Reader";
+import Reader from "../components/reader/Reader";
 
 type ReaderProps = {
       book: Publication;
