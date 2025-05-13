@@ -31,13 +31,17 @@ const BookRow = (props: BookRowProps) => {
 
 
 
-            <span className="text-base-content flex flex-col items-start justify-center truncate">
+            <span className="text-base-content flex flex-col gap-1 items-start justify-center truncate">
                 {props.book.metadata.title}
-                {props.book.metadata.tag && <span className="badge badge-success">{props.book.metadata.tag}</span>}
+                <div className="flex flex-row gap-1">
+                    {props.book.metadata.tags && props.book.metadata.tags.length > 0 && props.book.metadata.tags.map((tag, i) => (
+                        <span className="badge badge-info" key={i}>{tag.name}</span>
+                    ))}
+                </div>
                 
-                {props.book.metadata.authors.map((author, i) => (
-                    <span key={i} className="text-base-content opacity-60 text-sm">{author.name}</span>
-                ))}
+
+                    <span  className="text-base-content opacity-60 text-sm">{props.book.metadata.authors.map(a => a.name).join(", ") || "Unknown Author"}</span>
+                
                 <br />
                 {
                     props.progress && props.progress > 0 &&

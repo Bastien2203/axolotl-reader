@@ -309,7 +309,8 @@ export const getLastReadBook = (): Promise<Publication | null> => {
                 } else {
                     reject("Book not found");
                 }
-            }).catch(() => {
+            }).catch((e) => {
+                console.error(e);
                 reject("Error fetching book");
             });
         } else {

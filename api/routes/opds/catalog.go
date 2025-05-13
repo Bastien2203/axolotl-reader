@@ -38,6 +38,8 @@ func Catalog(db *gorm.DB, c *gin.Context) {
 		Order("series_name ASC").
 		Order("series_position ASC").
 		Order("title ASC").
+		Preload("Authors").
+		Preload("Tags").
 		Find(&comics)
 
 	var total int64

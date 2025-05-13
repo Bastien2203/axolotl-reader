@@ -41,6 +41,8 @@ func main() {
 	}
 	db.AutoMigrate(&models.Comic{})
 	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.Author{})
+	db.AutoMigrate(&models.Tag{})
 
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{

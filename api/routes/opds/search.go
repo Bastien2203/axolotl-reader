@@ -45,17 +45,26 @@ func Search(db *gorm.DB, c *gin.Context) {
 	pattern := "%" + strings.TrimSpace(q) + "%"
 	var comics []models.Comic
 	db.
+		Preload("Authors").
+		Preload("Tags").
+		Joins("JOIN comic_authors ON comic_authors.comic_id = comics.id").
+		Joins("JOIN authors ON authors.id = comic_authors.author_id").
 		Limit(sizeInt).
 		Offset(fromInt).
 		Order("series_name ASC").
 		Order("series_position ASC").
 		Order("title ASC").
-		Where("title LIKE ? OR author LIKE ?", pattern, pattern).
+		Where("title LIKE ? OR authors.name LIKE ?", pattern, pattern).
+		Group("comics.id").
 		Find(&comics)
 
 	var total int64
-	db.Model(&models.Comic{}).
-		Where("title LIKE ? OR author LIKE ?", pattern, pattern).
+	db.
+		Joins("JOIN comic_authors ON comic_authors.comic_id = comics.id").
+		Joins("JOIN authors ON authors.id = comic_authors.author_id").
+		Where("title LIKE ? OR authors.name LIKE ?", pattern, pattern).
+		Model(&models.Comic{}).
+		Distinct("comics.id").
 		Count(&total)
 
 	publications := make([]gin.H, len(comics))
@@ -77,6 +86,8 @@ func Search(db *gorm.DB, c *gin.Context) {
 func getBookByID(db *gorm.DB, c *gin.Context, id string) {
 	var comic models.Comic
 	if err := db.
+		Preload("Authors").
+		Preload("Tags").
 		Where("identifier = ?", id).
 		First(&comic).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {

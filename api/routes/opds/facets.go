@@ -31,9 +31,9 @@ func Facets(db *gorm.DB, c *gin.Context) {
 	fmt.Println("all", all)
 
 	if len(all) == 0 || all["authors"] != nil {
-		db.Model(&models.Comic{}).
+		db.Model(&models.Author{}).
 			Distinct().
-			Pluck("author", &authors)
+			Pluck("name", &authors)
 		facets["authors"] = authors
 	}
 
@@ -47,11 +47,9 @@ func Facets(db *gorm.DB, c *gin.Context) {
 	}
 
 	if len(all) == 0 || all["tags"] != nil {
-		db.Model(&models.Comic{}).
+		db.Model(&models.Tag{}).
 			Distinct().
-			Where("tag != ''").
-			Where("tag IS NOT NULL").
-			Pluck("tag", &tags)
+			Pluck("name", &tags)
 		facets["tags"] = tags
 	}
 

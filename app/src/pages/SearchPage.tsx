@@ -92,6 +92,7 @@ const SearchPage = () => {
                             className="input input-bordered w-full mb-4"
                             onChange={(e) => setSearch(e.target.value)}
                             value={search}
+                            autoFocus
                         />
 
                         <BookTable

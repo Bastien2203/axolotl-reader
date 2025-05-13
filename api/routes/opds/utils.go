@@ -7,11 +7,25 @@ import (
 )
 
 func BuildOPDSPublication(comic models.Comic) gin.H {
+	var authors []map[string]any
+	for _, author := range comic.Authors {
+		authors = append(authors, map[string]any{
+			"name": author.Name,
+		})
+	}
+
+	var tags []map[string]any
+	for _, tag := range comic.Tags {
+		tags = append(tags, map[string]any{
+			"name": tag.Name,
+		})
+	}
+
 	metadata := gin.H{
 		"title":      comic.Title,
 		"identifier": comic.Identifier,
-		"authors":    []gin.H{{"name": comic.Author}},
-		"tag":        comic.Tag,
+		"authors":    authors,
+		"tags":       tags,
 	}
 
 	if comic.SeriesName != "" {

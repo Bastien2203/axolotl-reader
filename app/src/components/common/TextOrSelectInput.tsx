@@ -1,3 +1,4 @@
+import { Trash } from "lucide-react";
 import React from "react";
 
 type TextOrSelectInputProps = {
@@ -50,6 +51,68 @@ export const TextOrSelectInput = (props: TextOrSelectInputProps) => {
           ))}
         </select>
       )}
+    </div>
+  );
+};
+
+
+
+type TextOrSelectInputManyProps = {
+  label: string;
+  name: string;
+  value: string[];
+  onChange: (value: string[]) => void;
+  options: string[];
+  toggleLabel?: string;
+};
+
+export const TextOrSelectInputMany = (props: TextOrSelectInputManyProps) => {
+  const [_value, _setValue] = React.useState<string>("");
+
+  return (
+    <div className="space-y-2">
+      <div className="flex gap-2 items-end">
+        <div className="flex-1">
+          <TextOrSelectInput
+            label={props.label}
+            name={props.name}
+            value={_value}
+            onChange={_setValue}
+            options={props.options}
+            toggleLabel={props.toggleLabel}
+          />
+        </div>
+        <button
+          className="btn btn-primary"
+          onClick={() => {
+            if (_value && !props.value.includes(_value)) {
+              props.onChange([...props.value, _value]);
+              _setValue("");
+            }
+          }}
+        >
+          Add
+        </button>
+      </div>
+
+      <ul className="space-y-1 list">
+        {props.value.map((v, i) => (
+          <li
+            key={i}
+            className="flex items-center justify-between list-row"
+          >
+            <span className="text-sm">{v}</span>
+            <button
+              className="text-error hover:text-red-600"
+              onClick={() =>
+                props.onChange(props.value.filter((_, j) => j !== i))
+              }
+            >
+              <Trash size={16} />
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

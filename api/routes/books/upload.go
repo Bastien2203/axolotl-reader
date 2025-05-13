@@ -1,11 +1,13 @@
 package books
 
 import (
+	"fmt"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/Bastien2203/comics-reader/cover_queue"
 	"github.com/Bastien2203/comics-reader/log"
@@ -17,13 +19,13 @@ import (
 func Upload(db *gorm.DB, c *gin.Context) {
 	// Retrive metadata
 	title := c.PostForm("title")
-	author := c.PostForm("author")
+	authors := strings.Split(c.PostForm("authors"), ",")
 	seriesName := c.PostForm("series_name")
 	seriesPositionStr := c.PostForm("series_position")
 	seriesPosition := 0
-	var tag string
-	if c.PostForm("tag") != "" {
-		tag = c.PostForm("tag")
+	var tags []string
+	if c.PostForm("tags") != "" {
+		tags = strings.Split(c.PostForm("tags"), ",")
 	}
 
 	if seriesPositionStr != "" {
@@ -34,7 +36,7 @@ func Upload(db *gorm.DB, c *gin.Context) {
 	}
 
 	identifier := c.PostForm("identifier")
-	if title == "" || author == "" || identifier == "" {
+	if title == "" || len(authors) == 0 || identifier == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "title, author and identifier required"})
 		return
 	}
@@ -90,9 +92,30 @@ func Upload(db *gorm.DB, c *gin.Context) {
 		coverUrl = "/covers/" + identifier + ".png"
 	}
 
+	tagsList := make([]models.Tag, len(tags))
+	for i, tag := range tags {
+		tagsList[i] = models.Tag{Name: tag}
+		if err := db.Where(models.Tag{Name: tag}).FirstOrCreate(&tagsList[i]).Error; err != nil {
+			log.Error(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "db insert failed"})
+			return
+		}
+	}
+
+	fmt.Println(authors)
+	authorsList := make([]models.Author, len(authors))
+	for i, author := range authors {
+		authorsList[i] = models.Author{Name: author}
+		if err := db.Where(models.Author{Name: author}).FirstOrCreate(&authorsList[i]).Error; err != nil {
+			log.Error(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "db insert failed"})
+			return
+		}
+	}
+
 	comic := models.Comic{
 		Title:          title,
-		Author:         author,
+		Authors:        authorsList,
 		Identifier:     identifier,
 		CoverURL:       coverUrl,
 		FileURL:        bookUrl,
@@ -100,7 +123,7 @@ func Upload(db *gorm.DB, c *gin.Context) {
 		CoverPath:      coverPath,
 		SeriesName:     seriesName,
 		SeriesPosition: seriesPosition,
-		Tag:            tag,
+		Tags:           tagsList,
 	}
 
 	if err := db.Create(&comic).Error; err != nil {

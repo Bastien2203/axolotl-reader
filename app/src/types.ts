@@ -15,9 +15,11 @@ export type Publication = {
         title: string;
         identifier: string;
         authors: {
-            name: string
+            name: string;
         }[];
-        tag: string;
+        tags: {
+            name: string;
+        }[];
         belongsTo?: {
         series?: {
             name: string;

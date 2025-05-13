@@ -2,7 +2,7 @@ import { Import, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { API_HOST, Facets } from "../types";
 import { useToast } from "../contexts/ToastContext";
-import { TextOrSelectInput } from "../components/common/TextOrSelectInput";
+import { TextOrSelectInput, TextOrSelectInputMany } from "../components/common/TextOrSelectInput";
 import { getFacets } from "../services/Book";
 import PageLayout from "../layout/PageLayout";
 import Spinner from "../components/common/Spinner";
@@ -34,13 +34,15 @@ const ImportBook = () => {
     });
 
     const [metadata, setMetadata] = useState<{
-        author?: string;
+        authors?: string[];
         seriesName?: string;
-        tag?: string;
+        tags?: string[];
     }>({});
 
     const [seriesMode, setSeriesMode] = useState(false);
     const [useFirstPageAsCover, setUseFirstPageAsCover] = useState(true);
+    const [useTemplateForTitle, setUseTemplateForTitle] = useState(false);
+    const [template, setTemplate] = useState("");
     const [facets, setFacets] = useState<Facets>();
 
     const handleImportClick = () => fileInputRef.current?.click();
@@ -57,7 +59,7 @@ const ImportBook = () => {
 
     const uploadBook = (book: {
         title: string;
-        author: string;
+        authors: string[];
         seriesName?: string;
         seriesPosition?: number;
         file: File;
@@ -68,8 +70,8 @@ const ImportBook = () => {
         formData.append("use_first_page_as_cover", useFirstPageAsCover ? "true" : "false");
         if (book.cover) formData.append("cover", book.cover);
         formData.append("title", book.title);
-        formData.append("author", book.author);
-        formData.append("tag", metadata.tag || "");
+        formData.append("authors", book.authors.join(","));
+        formData.append("tags", metadata.tags?.join(",") || "");
         if (book.seriesName && book.seriesPosition) {
             formData.append("series_name", book.seriesName);
             formData.append("series_position", book.seriesPosition.toString());
@@ -88,7 +90,7 @@ const ImportBook = () => {
     const uploadBooks = async () => {
         const totalMB = bookDatas.reduce((acc, b) => acc + b.file.size, 0) / 1024 / 1024;
 
-        if (!metadata?.author) return showToast({ message: "Author is required", type: "alert-error" });
+        if (!metadata?.authors || metadata.authors.length < 1 ) return showToast({ message: "Author is required", type: "alert-error" });
         if (!useFirstPageAsCover && bookDatas.some(b => !b.cover)) return showToast({ message: "Cover is required", type: "alert-error" });
         if (bookDatas.some(b => !b.title)) return showToast({ message: "Title is required", type: "alert-error" });
         if (bookDatas.some(b => b.title.length > 100)) return showToast({ message: "Title is too long", type: "alert-error" });
@@ -103,7 +105,7 @@ const ImportBook = () => {
                 const res = await uploadBook({
                     title: book.title,
                     file: book.file,
-                    author: metadata.author!,
+                    authors: metadata.authors!,
                     seriesName: seriesMode ? metadata.seriesName : undefined,
                     seriesPosition: seriesMode ? book.seriesPosition : undefined,
                     cover: useFirstPageAsCover ? undefined : book.cover,
@@ -140,6 +142,17 @@ const ImportBook = () => {
             });
     }, []);
 
+    useEffect(() => {
+        if (useTemplateForTitle) {
+            setBookDatas(prev => prev.map((book, i) => ({
+                ...book,
+                title: template.replace(/#/g, ((
+                    seriesMode ? (book.seriesPosition || i + 1) : i + 1).toString()),
+                ),
+            })));
+        } 
+    }, [template, seriesMode]);
+
     return <PageLayout title="Import Book">
         <input ref={fileInputRef} type="file" accept=".cbz" className="hidden" onChange={handleFileInputChange} multiple />
 
@@ -170,7 +183,7 @@ const ImportBook = () => {
                         <tbody>
                             {bookDatas.map((book) => (
                                 <tr key={book.file.name}>
-                                    <td>{book.title}</td>
+                                    <td>{book.file.name}</td>
                                     <td>{(book.file.size / 1024 / 1024).toFixed(2)} MB</td>
                                     <td>
                                         <input type="text" className="input input-bordered w-full mt-1" value={book.title} onChange={(e) => {
@@ -251,24 +264,42 @@ const ImportBook = () => {
                                     </span>
                                 </label>
                             </div>
+
+                            <div className="flex items-center gap-4 w-full">
+                                <input id="use-template-for-title" type="checkbox" className="checkbox" defaultChecked={useTemplateForTitle} onChange={(e) => setUseTemplateForTitle(e.target.checked)} />
+                                <label htmlFor="use-template-for-title" className="label cursor-pointer">
+                                    <span className="label-text">
+                                        Use template for title
+                                    </span>
+                                </label>
+                            </div>
                         </fieldset>
 
-                        <TextOrSelectInput
-                            label="Author"
-                            name="author"
-                            value={metadata.author || ""}
-                            onChange={(val) => setMetadata({ ...metadata, author: val })}
-                            options={facets?.facets?.authors || []}
-                            toggleLabel="Select from existing authors"
-                        />
-                        <TextOrSelectInput
-                            label="Tag"
-                            name="tag"
-                            value={metadata.tag || ""}
-                            onChange={(val) => setMetadata({ ...metadata, tag: val })}
-                            options={facets?.facets?.tags || []}
-                            toggleLabel="Select from existing tags"
-                        />
+                        {
+                            useTemplateForTitle &&
+                             <input type="text" className="input input-bordered w-full mt-1" placeholder="Ex: Tome number #" value={template} onChange={(e) => setTemplate(e.target.value)} />
+                        }
+
+                        <fieldset className="fieldset border-base-content/60 rounded-box border p-4">
+                            <TextOrSelectInputMany
+                                label="Authors"
+                                name="authors"
+                                value={metadata.authors || []}
+                                onChange={(val) => setMetadata({ ...metadata, authors: val })}
+                                options={facets?.facets?.authors || []}
+                                toggleLabel="Select from existing authors"
+                            />
+                        </fieldset>
+                        <fieldset className="fieldset border-base-content/60 rounded-box border p-4">
+                            <TextOrSelectInputMany
+                                label="Tags"
+                                name="tags"
+                                value={metadata.tags || []}
+                                onChange={(val) => setMetadata({ ...metadata, tags: val })}
+                                options={facets?.facets?.tags || []}
+                                toggleLabel="Select from existing tags"
+                            />
+                        </fieldset>
                         {
                             seriesMode && <TextOrSelectInput
                                 label="Series Name"
