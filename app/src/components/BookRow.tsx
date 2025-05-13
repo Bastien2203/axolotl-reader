@@ -15,7 +15,7 @@ type BookRowProps = {
 const BookRow = (props: BookRowProps) => {
     const cover = props.book.links.filter(link => link.rel === "cover")[0]
 
-    return <tr className="list-row" style={{ height: "15em" }}>
+    return <tr className="list-row" style={{ height: "max(15vw, 10em)"}}>
         <td className="flex justify-between hover:opacity-60 cursor-pointer w-full" onClick={() => props.openBook?.()} >
             {
                 cover && (
@@ -23,7 +23,7 @@ const BookRow = (props: BookRowProps) => {
                         alt={props.book.metadata.title}
                         className="object-cover rounded-md h-full p-1"
                         url={API_HOST + cover.href}
-                        height="15em"
+                        height="max(15vw, 10em)"
                         token={localStorage.getItem("token") || ""}
                     />
                 )
