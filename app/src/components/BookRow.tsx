@@ -15,15 +15,15 @@ type BookRowProps = {
 const BookRow = (props: BookRowProps) => {
     const cover = props.book.links.filter(link => link.rel === "cover")[0]
 
-    return <tr className="list-row h-42">
-        <td className="h-42 flex justify-between hover:opacity-60 cursor-pointer w-full" onClick={() => props.openBook?.()}>
+    return <tr className="list-row" style={{ height: "15em" }}>
+        <td className="flex justify-between hover:opacity-60 cursor-pointer w-full" onClick={() => props.openBook?.()} >
             {
                 cover && (
                     <SecureImage
                         alt={props.book.metadata.title}
                         className="object-cover rounded-md h-full p-1"
                         url={API_HOST + cover.href}
-                        width="10em"
+                        height="15em"
                         token={localStorage.getItem("token") || ""}
                     />
                 )
