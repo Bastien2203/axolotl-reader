@@ -1,15 +1,18 @@
 import { Import, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { API_HOST, Facets } from "../types";
 import { useToast } from "../contexts/ToastContext";
 import { TextOrSelectInput } from "../components/common/TextOrSelectInput";
 import { getFacets } from "../services/Book";
 import PageLayout from "../layout/PageLayout";
+import Spinner from "../components/common/Spinner";
 
 
 const ImportBook = () => {
 
-    const { showToast } = useToast();
+   const { showToast } = useToast();
+
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const [bookDatas, setBookDatas] = useState<{
         title: string;
@@ -21,9 +24,13 @@ const ImportBook = () => {
     const [loading, setLoading] = useState<{
         loading: boolean;
         percent: number;
+        uploadedMB: number;
+        totalMB: number;
     }>({
         loading: false,
         percent: 0,
+        uploadedMB: 0,
+        totalMB: 0,
     });
 
     const [metadata, setMetadata] = useState<{
@@ -32,40 +39,23 @@ const ImportBook = () => {
         tag?: string;
     }>({});
 
-
     const [seriesMode, setSeriesMode] = useState(false);
     const [useFirstPageAsCover, setUseFirstPageAsCover] = useState(true);
-    const [facets, setFacets] = useState<Facets>()
+    const [facets, setFacets] = useState<Facets>();
 
-
-    const handleImportClick = () => {
-        const fileInput = document.getElementById("file-input") as HTMLInputElement;
-        fileInput.click();
-    }
+    const handleImportClick = () => fileInputRef.current?.click();
 
     const handleFileInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const fileList = event.target.files;
-        if (fileList) {
-            const selectedFiles: File[] = [];
-            for (let i = 0; i < fileList.length; i++) {
-                selectedFiles.push(fileList[i]);
-            }
-            if (selectedFiles.length > 1) {
-                setBookDatas(selectedFiles.map((file, i) => ({
-                    file,
-                    title: file.name.substring(0, file.name.lastIndexOf(".")) || file.name,
-                    seriesPosition: i + 1,
-                })));
-            } else {
-                setBookDatas(selectedFiles.map(file => ({
-                    file,
-                    title: file.name.substring(0, file.name.lastIndexOf(".")) || file.name,
-                })));
-            }
-        }
-    }
+        const files = Array.from(event.target.files ?? []);
+        const mapped = files.map((file, i) => ({
+            file,
+            title: file.name.replace(/\.[^/.]+$/, ""),
+            seriesPosition: files.length > 1 ? i + 1 : undefined,
+        }));
+        setBookDatas(mapped);
+    };
 
-    const uploadBook = async (book: {
+    const uploadBook = (book: {
         title: string;
         author: string;
         seriesName?: string;
@@ -76,160 +66,91 @@ const ImportBook = () => {
         const formData = new FormData();
         formData.append("book", book.file);
         formData.append("use_first_page_as_cover", useFirstPageAsCover ? "true" : "false");
-        if (book.cover) {
-            formData.append("cover", book.cover);
-        }
-
+        if (book.cover) formData.append("cover", book.cover);
         formData.append("title", book.title);
         formData.append("author", book.author);
         formData.append("tag", metadata.tag || "");
-
-        if (book.seriesName && book.seriesName !== "" && book.seriesPosition) {
+        if (book.seriesName && book.seriesPosition) {
             formData.append("series_name", book.seriesName);
             formData.append("series_position", book.seriesPosition.toString());
         }
+        formData.append("identifier", crypto.randomUUID());
 
-        const uuid = crypto.randomUUID();
-        formData.append("identifier", uuid);
-
-        return await fetch(`${API_HOST}/books`, {
+        return fetch(`${API_HOST}/books`, {
             method: "POST",
             body: formData,
             headers: {
-                "Authorization": "Bearer " + localStorage.getItem("token"),
-            }
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
         });
-
-    }
+    };
 
     const uploadBooks = async () => {
+        const totalMB = bookDatas.reduce((acc, b) => acc + b.file.size, 0) / 1024 / 1024;
 
-        if (!metadata?.author) {
-            showToast({
-                message: "Author is required",
-                type: "alert-error"
-            });
-            return;
-        }
+        if (!metadata?.author) return showToast({ message: "Author is required", type: "alert-error" });
+        if (!useFirstPageAsCover && bookDatas.some(b => !b.cover)) return showToast({ message: "Cover is required", type: "alert-error" });
+        if (bookDatas.some(b => !b.title)) return showToast({ message: "Title is required", type: "alert-error" });
+        if (bookDatas.some(b => b.title.length > 100)) return showToast({ message: "Title is too long", type: "alert-error" });
+        if (seriesMode && bookDatas.some(b => !b.seriesPosition || b.seriesPosition < 1)) return showToast({ message: "Invalid series position", type: "alert-error" });
+        if (seriesMode && !metadata.seriesName) return showToast({ message: "Series name is required", type: "alert-error" });
 
-        if (!useFirstPageAsCover && bookDatas.some(book => !book.cover)) {
-            showToast({
-                message: "Cover is required",
-                type: "alert-error"
-            });
-            return;
-        }
+        setLoading({ loading: true, percent: 0, uploadedMB: 0, totalMB });
 
-        if (bookDatas.some(book => book.title === "")) {
-            showToast({
-                message: "Title is required",
-                type: "alert-error"
-            });
-            return;
-        }
-
-        if (bookDatas.some(book => book.title.length > 100)) {
-            showToast({
-                message: "Title is too long",
-                type: "alert-error"
-            });
-            return;
-        }
-
-        if (seriesMode && bookDatas.some(book => !book.seriesPosition)) {
-            showToast({
-                message: "Series position is required and must be greater than 0",
-                type: "alert-error"
-            });
-            return;
-        }
-
-        if (bookDatas.some(book => book.seriesPosition && book.seriesPosition < 1)) {
-            showToast({
-                message: "Series position must be greater than 0",
-                type: "alert-error"
-            });
-            return;
-        }
-
-        if (seriesMode && (!metadata.seriesName || metadata.seriesName === "")) {
-            showToast({
-                message: "Series name is required",
-                type: "alert-error"
-            });
-            return;
-        }
-
-        setLoading({
-            loading: true,
-            percent: 0,
-        });
-
-        bookDatas.forEach(async (book, index) => {
-            uploadBook({
-                title: book.title,
-                file: book.file,
-                author: metadata.author!!,
-                seriesPosition: seriesMode ? book.seriesPosition : undefined,
-                seriesName: seriesMode ? metadata.seriesName : undefined,
-                cover: useFirstPageAsCover ? undefined : book.cover,
-            }).then((res) => {
-                if (res.status === 201) {
-                    console.log("Book uploaded successfully");
-                    console.log("percent", Math.round(((index + 1) / bookDatas.length) * 100));
-                    setLoading((prev) => ({
-                        ...prev,
-                        percent: Math.round(((index + 1) / bookDatas.length) * 100),
-                    }));
-                } else {
-                    showToast({
-                        message: `Error uploading book: ${res.statusText}`,
-                        type: "alert-error"
-                    });
-                }
-            }
-            ).catch((err) => {
-                console.error(err);
-                showToast({
-                    message: `Error uploading book: ${err}`,
-                    type: "alert-error"
+        for (let i = 0; i < bookDatas.length; i++) {
+            const book = bookDatas[i];
+            try {
+                const res = await uploadBook({
+                    title: book.title,
+                    file: book.file,
+                    author: metadata.author!,
+                    seriesName: seriesMode ? metadata.seriesName : undefined,
+                    seriesPosition: seriesMode ? book.seriesPosition : undefined,
+                    cover: useFirstPageAsCover ? undefined : book.cover,
                 });
-            }
-            ).finally(() => {
-                if (index === bookDatas.length - 1) {
-                    setLoading({
-                        loading: false,
-                        percent: 0,
-                    });
-                    setBookDatas([]);
-                    setMetadata({});
-                    const fileInput = document.getElementById("file-input") as HTMLInputElement;
-                    fileInput.value = "";
-                }
-            }
-            );
-        });
 
-    }
+                if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+
+                const uploaded = book.file.size / 1024 / 1024;
+                const uploadedTotal = bookDatas.slice(0, i + 1).reduce((acc, b) => acc + b.file.size, 0) / 1024 / 1024;
+
+                setLoading(prev => ({
+                    ...prev,
+                    percent: Math.round(((i + 1) / bookDatas.length) * 100),
+                    uploadedMB: uploadedTotal,
+                }));
+            } catch (err) {
+                console.error(err);
+                showToast({ message: `Error uploading book: ${err}`, type: "alert-error" });
+            }
+        }
+
+        setLoading({ loading: false, percent: 100, uploadedMB: totalMB, totalMB });
+        setBookDatas([]);
+        setMetadata({});
+        if (fileInputRef.current) fileInputRef.current.value = "";
+    };
 
     useEffect(() => {
-        getFacets().then((data) => {
-            setFacets(data);
-        }).catch((err) => {
-            console.error(err);
-            showToast({
-                message: `Error fetching facets`,
-                type: "alert-error"
+        getFacets()
+            .then(setFacets)
+            .catch(err => {
+                console.error(err);
+                showToast({ message: "Error fetching facets", type: "alert-error" });
             });
-        });
-
     }, []);
 
     return <PageLayout title="Import Book">
-        <input type="file" accept=".cbz" className="hidden" id="file-input" onChange={handleFileInputChange} multiple />
+        <input ref={fileInputRef} type="file" accept=".cbz" className="hidden" onChange={handleFileInputChange} multiple />
 
+        <div className="w-full flex justify-center">
+            <button className="btn btn-primary w-1/2 my-12" onClick={handleImportClick}>
+                <Search size={24} />
+                Find Book(s) (.cbz) in your device
+            </button>
+        </div>
         {
-            bookDatas && bookDatas.length > 0 ? (
+            bookDatas && bookDatas.length > 0 && (
                 <>
                     <table className="table">
                         <thead>
@@ -362,35 +283,29 @@ const ImportBook = () => {
 
                     </div>
 
+
                     <div className="flex justify-center gap-4 mt-5">
                         <button className="btn btn-default mt-2" onClick={() => setBookDatas([])}>
                             Cancel
                         </button>
-                        <button className="btn btn-accent mt-2" onClick={uploadBooks}>
+                        <button className="btn btn-accent mt-2" onClick={uploadBooks} disabled={loading.loading}>
                             <Import size={24} />
-                            Import {bookDatas.length} Book(s)
+                            Import {bookDatas.length} Book(s) 
+                            {loading.loading && <Spinner/>}
                         </button>
                     </div>
 
-                    {
-                        loading.loading ? (
-                            <div className="flex flex-col items-center justify-center mt-5">
-                                <p className="text-sm">Uploading {bookDatas.length} book(s)</p>
-                                <progress className="progress w-full mt-2" value={loading.percent} max="100"></progress>
-                                <p className="text-sm">{loading.percent}%</p>
-                            </div>
-                        ) : null
-                    }
+                    
                 </>
-            ) : (
-                <div className="w-full flex justify-center">
-                    <button className="btn btn-primary w-1/2 my-12" onClick={handleImportClick}>
-                        <Search size={24} />
-                        Find Book(s) (.cbz) in your device
-                    </button>
-                </div>
-            )
+            ) 
         }
+
+        {loading.loading && (
+                <div className="my-4">
+                    <progress className="progress progress-primary w-full" value={loading.percent} max={100}></progress>
+                    <p className="text-sm mt-1">Uploaded {loading.uploadedMB.toFixed(2)} / {loading.totalMB.toFixed(2)} MB ({loading.percent}%)</p>
+                </div>
+            )}
     </PageLayout>
 }
 
