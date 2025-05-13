@@ -111,7 +111,7 @@ const ImportBook = () => {
 
                 if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
 
-                const uploaded = book.file.size / 1024 / 1024;
+
                 const uploadedTotal = bookDatas.slice(0, i + 1).reduce((acc, b) => acc + b.file.size, 0) / 1024 / 1024;
 
                 setLoading(prev => ({
