@@ -13,4 +13,5 @@ type Comic struct {
 	FilePath       string `gorm:"not null"`
 	SeriesName     string `gorm:"null"`
 	SeriesPosition int    `gorm:"null"`
+	Tag            string `gorm:"null"`
 }

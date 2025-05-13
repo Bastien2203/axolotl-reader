@@ -21,6 +21,10 @@ func Upload(db *gorm.DB, c *gin.Context) {
 	seriesName := c.PostForm("series_name")
 	seriesPositionStr := c.PostForm("series_position")
 	seriesPosition := 0
+	var tag string
+	if c.PostForm("tag") != "" {
+		tag = c.PostForm("tag")
+	}
 
 	if seriesPositionStr != "" {
 		pos, err := strconv.Atoi(seriesPositionStr)
@@ -96,6 +100,7 @@ func Upload(db *gorm.DB, c *gin.Context) {
 		CoverPath:      coverPath,
 		SeriesName:     seriesName,
 		SeriesPosition: seriesPosition,
+		Tag:            tag,
 	}
 
 	if err := db.Create(&comic).Error; err != nil {

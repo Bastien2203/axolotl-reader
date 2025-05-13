@@ -65,7 +65,7 @@ func main() {
 		opdsGroup.GET("/catalog.json", func(c *gin.Context) { opds.Catalog(db, c) })
 		opdsGroup.GET("/facets.json", func(c *gin.Context) { opds.Facets(db, c) })
 		opdsGroup.GET("/search.json", func(c *gin.Context) { opds.Search(db, c) })
-		opdsGroup.GET("/series/:name.json", func(c *gin.Context) { opds.Series(db, c) })
+		opdsGroup.GET("/series/:name", func(c *gin.Context) { opds.GetSeries(db, c) })
 	}
 
 	booksGroup := r.Group("/books", middleware.AuthRequired)

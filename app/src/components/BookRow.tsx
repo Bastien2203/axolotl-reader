@@ -5,7 +5,7 @@ import SecureImage from "./common/SecureImage";
 
 type BookRowProps = {
     book: Publication;
-    progress: number;
+    progress: number | null;
     openBook?: () => void;
     onDelete?: () => void;
     download?: () => void;
@@ -32,12 +32,14 @@ const BookRow = (props: BookRowProps) => {
 
             <span className="text-base-content flex flex-col items-start justify-center truncate">
                 {props.book.metadata.title}
+                {props.book.metadata.tag && <span className="badge badge-success">{props.book.metadata.tag}</span>}
+                
                 {props.book.metadata.authors.map((author, i) => (
                     <span key={i} className="text-base-content opacity-60 text-sm">{author.name}</span>
                 ))}
                 <br />
                 {
-                    props.progress > 0 &&
+                    props.progress && props.progress > 0 &&
                     <progress
                         className="progress progress-primary w-full z-1"
                         value={props.progress}

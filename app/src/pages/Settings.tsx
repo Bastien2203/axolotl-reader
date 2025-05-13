@@ -4,6 +4,7 @@ import { API_HOST, Me } from "../types";
 import { useEffect, useState } from "react";
 import { useToast } from "../contexts/ToastContext";
 import Spinner from "../components/common/Spinner";
+import PageLayout from "../layout/PageLayout";
 
 interface Setting {
     type: "link" | "button";
@@ -99,9 +100,7 @@ const Settings = () => {
 
     }
 
-    return <div className="p-4 space-y-6">
-        <h1 className="text-2xl font-bold">Settings</h1>
-
+    return <PageLayout title="Settings">
         <h2 className="text-base-content/80">
             Logged as {me?.Username}
         </h2>
@@ -138,7 +137,7 @@ const Settings = () => {
             
 
         </ul>
-    </div>
+    </PageLayout>
 }
 
 export default Settings;

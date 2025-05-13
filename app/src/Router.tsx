@@ -1,12 +1,12 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom"
 import Menu from "./layout/Menu"
-import Home from "./pages/Home"
 import ImportBook from "./pages/ImportBook"
-import Library from "./pages/Library"
 import Login from "./pages/Login"
 import Settings from "./pages/Settings"
 import Downloads from "./pages/Downloads"
 import CreateUser from "./pages/settings/CreateUser"
+import Home from "./pages/Home"
+import SearchPage from "./pages/SearchPage"
 
 
 const Router = () => {
@@ -25,13 +25,13 @@ const Router = () => {
                     element: <Home />
                 },
                 {
+                    path: "/search",
+                    element: <SearchPage />
+                },
+                {
                     path: "/import",
                     element: <ImportBook />
                 },
-                {
-                    path: "/library",
-                    element: <Library />
-                }, 
                 {
                     path: "/settings",
                     children: [

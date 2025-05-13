@@ -11,6 +11,7 @@ func BuildOPDSPublication(comic models.Comic) gin.H {
 		"title":      comic.Title,
 		"identifier": comic.Identifier,
 		"authors":    []gin.H{{"name": comic.Author}},
+		"tag":        comic.Tag,
 	}
 
 	if comic.SeriesName != "" {

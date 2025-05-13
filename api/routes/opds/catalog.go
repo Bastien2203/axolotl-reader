@@ -2,6 +2,7 @@ package opds
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/Bastien2203/comics-reader/models"
 	"github.com/gin-gonic/gin"
@@ -9,8 +10,38 @@ import (
 )
 
 func Catalog(db *gorm.DB, c *gin.Context) {
+
+	size := c.Query("size")
+	if size == "" {
+		size = "10"
+	}
+	from := c.Query("from")
+	if from == "" {
+		from = "0"
+	}
+
+	sizeInt, err := strconv.Atoi(size)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid size parameter"})
+		return
+	}
+	fromInt, err := strconv.Atoi(from)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid from parameter"})
+		return
+	}
+
 	var comics []models.Comic
-	db.Find(&comics)
+	db.
+		Limit(sizeInt).
+		Offset(fromInt).
+		Order("series_name ASC").
+		Order("series_position ASC").
+		Order("title ASC").
+		Find(&comics)
+
+	var total int64
+	db.Model(&models.Comic{}).Count(&total)
 
 	publications := make([]gin.H, len(comics))
 	for i, comic := range comics {
@@ -37,7 +68,12 @@ func Catalog(db *gorm.DB, c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"metadata":     gin.H{"title": "Books Catalog"},
+		"metadata": gin.H{
+			"title": "Books Catalog",
+			"total": total,
+			"size":  sizeInt,
+			"from":  fromInt,
+		},
 		"links":        links,
 		"publications": publications,
 	})

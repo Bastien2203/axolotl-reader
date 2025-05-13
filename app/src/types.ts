@@ -1,5 +1,15 @@
 
 
+export type Catalog = {
+    publications: Publication[];
+    metadata : {
+        title: string;
+        total: number;
+        size: number;
+        from: number;
+    }
+}
+
 export type Publication = {
     metadata: {
         title: string;
@@ -7,6 +17,7 @@ export type Publication = {
         authors: {
             name: string
         }[];
+        tag: string;
         belongsTo?: {
         series?: {
             name: string;
@@ -23,9 +34,15 @@ export type Publication = {
 
 export type Facets = {
     facets: {
-        authors: string[]
-        series: string[]
+        authors?: string[]
+        series?: string[]
+        tags?: string[]
     }
+}
+
+export type BookProgress = {
+    progress: number;
+    lastRead: string;
 }
 
 

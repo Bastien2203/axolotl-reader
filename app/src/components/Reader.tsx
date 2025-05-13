@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { API_HOST, Publication } from "../types"
 import { X } from "lucide-react";
 import JSZip from "jszip";
+import { getBookProgress, setBookProgress } from "../services/Book";
 
 
 type ReaderProps = {
@@ -107,8 +108,7 @@ const Reader = (props: ReaderProps) => {
         }
 
         function attachObserver() {
-            const saved = JSON.parse(localStorage.getItem("reader-progress") || "{}");
-            const progressData = saved[props.book.metadata.identifier];
+            const progressData = getBookProgress(props.book.metadata.identifier);
             if (progressData) {
                 const savedIndex = Math.floor((progressData.progress / 100) * images.length);
                 setTimeout(() => {
@@ -126,12 +126,8 @@ const Reader = (props: ReaderProps) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         const index = parseInt(entry.target.getAttribute('data-index') || '0');
-                        const progressMap = JSON.parse(localStorage.getItem("reader-progress") || "{}");
                         const progress = (index / images.length) * 100;
-                        progressMap[props.book.metadata.identifier] = {
-                            progress: progress
-                        };
-                        localStorage.setItem("reader-progress", JSON.stringify(progressMap));
+                        setBookProgress(props.book.metadata.identifier, progress);
                         setProgress(progress);
                     }
                 });

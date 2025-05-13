@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import { useToast } from "../../contexts/ToastContext"
-import TopNavigationBar from "../../layout/TopNavigationBar"
 import { API_HOST } from "../../types"
+import PageLayout from "../../layout/PageLayout"
 
 
 const CreateUser = () => {
@@ -48,7 +48,7 @@ const CreateUser = () => {
         }
     }
 
-    return <TopNavigationBar
+    return <PageLayout
         title="Create User"
         onBack={() => navigate("/settings")}
     >
@@ -58,7 +58,7 @@ const CreateUser = () => {
             <button className="btn btn-primary mt-4  w-full max-w-xs" type="submit">Create User</button>
         </form>
 
-    </TopNavigationBar>
+    </PageLayout>
 }
 
 export default CreateUser

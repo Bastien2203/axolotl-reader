@@ -1,31 +1,36 @@
 import { useEffect, useState } from "react";
 import { userReader } from "../contexts/ReaderContext";
 import { useToast } from "../contexts/ToastContext";
-import { downloadBook } from "../services/Book";
-import { Publication } from "../types";
+import { downloadBook, getBookProgress, getFacets, setBookProgress } from "../services/Book";
+import { Facets, Publication } from "../types";
 import BookRow from "./BookRow";
-import DeleteBookModal from "./DeleteBookModal";
+import DeleteBookModal from "./modals/DeleteBookModal";
 import { useLocation } from "react-router-dom";
+import SelectFacetsModal from "./modals/SelectFacetsModal";
+import FacetsFilter from "./FacetsFilter";
 
 type BookTableProps = {
     books: Publication[];
-    setBooks: (books: Publication[]) => void;
+    onBooksChange: (books: Publication[]) => void;
+    facets?: {
+        authors?: boolean
+        series?: boolean
+        tags?: boolean
+    }
 }
 
 const BookTable = (props: BookTableProps) => {
     const { showReader } = userReader()
     const { showToast } = useToast()
     const location = useLocation();
-    const [deleteModalOpen, setDeleteModalOpen] = useState<string>();
+    const [deleteModalOpen, setDeleteModalOpen] = useState<string | null>(null);
+    const [facets, setFacets] = useState<Facets | null>(null);
+    const [facetsModalOpen, setFacetsModalOpen] = useState<{
+        type: "authors" | "series" | "tags",
+        values: string[]
+    } | null>(null);
+    const [selectedFacets, setSelectedFacets] = useState<Facets | null>(null);
 
-
-    const progressMap = JSON.parse(localStorage.getItem("reader-progress") || "{}");
-    const getBookProgress = (identifier: string) => {
-        if (progressMap[identifier]) {
-            return progressMap[identifier].progress;
-        }
-        return 0;
-    }
 
     const locationChangeHandler = () => {
         const url = new URL(window.location.href);
@@ -43,17 +48,22 @@ const BookTable = (props: BookTableProps) => {
     }
 
     const markAsRead = (identifier: string) => {
-        const progress = progressMap[identifier];
-        if (progress) {
-            progressMap[identifier].progress = 100;
-        } else {
-            progressMap[identifier] = {
-                progress: 100,
-            }
-        }
-            localStorage.setItem("reader-progress", JSON.stringify(progressMap));
-
+        setBookProgress(identifier, 100)
     }
+
+    useEffect(() => {
+        if (props.facets) {
+            getFacets(props.facets).then((data) => {
+                setFacets(data);
+            }
+            ).catch(() => {
+                showToast({
+                    type: "alert-error",
+                    message: "Error fetching facets",
+                })
+            })
+        }
+    }, [props.facets]);
 
     useEffect(() => {
         if (props.books.length === 0) return;
@@ -64,19 +74,53 @@ const BookTable = (props: BookTableProps) => {
         locationChangeHandler();
     }, [location]);
 
+
+
     return <>
         <DeleteBookModal
             books={props.books}
-            setBooks={props.setBooks}
+            setBooks={props.onBooksChange}
             deleteModalOpen={deleteModalOpen}
             setDeleteModalOpen={setDeleteModalOpen}
         />
+        <SelectFacetsModal
+            facetsModalOpen={facetsModalOpen}
+            setFacetsModalOpen={setFacetsModalOpen}
+            selectedFacets={selectedFacets}
+            setSelectedFacets={setSelectedFacets}
+        />
+        <>
+            {facets && (
+                <div className="flex flex-col gap-2 mb-4">
+                    {
+                        Object.entries(facets.facets).map(([key]) => {
+                            return <FacetsFilter
+                                key={key}
+                                type={key as "series" | "tags" | "authors"}
+                                facets={facets}
+                                onFacetsButtonClick={(type, values) => {
+                                    setFacetsModalOpen({
+                                        type,
+                                        values
+                                    })
+                                }}
+                                selectedFacets={selectedFacets}
+                                onSelectedFacetsChange={setSelectedFacets}
+                            />
+                        })
+                    }
+
+
+                </div>
+            )}
+
+        </>
         <table className="table table-zebra w-full">
             <tbody>
                 {props.books.map((book, i) => (
                     <BookRow
                         key={i}
-                        progress={getBookProgress(book.metadata.identifier)}
+                        progress={getBookProgress(book.metadata.identifier)?.progress ?? null}
                         book={book}
                         openBook={() => showReader({
                             book,

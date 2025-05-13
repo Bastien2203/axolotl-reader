@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { API_HOST, Facets } from "../types";
 import { useToast } from "../contexts/ToastContext";
 import { TextOrSelectInput } from "../components/common/TextOrSelectInput";
+import { getFacets } from "../services/Book";
+import PageLayout from "../layout/PageLayout";
 
 
 const ImportBook = () => {
@@ -27,6 +29,7 @@ const ImportBook = () => {
     const [metadata, setMetadata] = useState<{
         author?: string;
         seriesName?: string;
+        tag?: string;
     }>({});
 
 
@@ -79,6 +82,7 @@ const ImportBook = () => {
 
         formData.append("title", book.title);
         formData.append("author", book.author);
+        formData.append("tag", metadata.tag || "");
 
         if (book.seriesName && book.seriesName !== "" && book.seriesPosition) {
             formData.append("series_name", book.seriesName);
@@ -209,29 +213,19 @@ const ImportBook = () => {
     }
 
     useEffect(() => {
-        const fetchFacets = async () => {
-            const res = await fetch(`${API_HOST}/opds/facets.json`, {
-                method: "GET",
-                headers: {
-                    "Authorization": "Bearer " + localStorage.getItem("token"),
-                }
+        getFacets().then((data) => {
+            setFacets(data);
+        }).catch((err) => {
+            console.error(err);
+            showToast({
+                message: `Error fetching facets`,
+                type: "alert-error"
             });
-            if (res.status === 200) {
-                const data = await res.json();
-                setFacets(data);
-            } else {
-                showToast({
-                    message: `Error fetching facets: ${res.statusText}`,
-                    type: "alert-error"
-                });
-            }
-        }
+        });
 
-        fetchFacets();
     }, []);
 
-    return <div className="flex flex-col  h-full w-full p-4 space-y-6">
-        <h1 className="text-2xl font-bold mb-5">Import Book</h1>
+    return <PageLayout title="Import Book">
         <input type="file" accept=".cbz" className="hidden" id="file-input" onChange={handleFileInputChange} multiple />
 
         {
@@ -346,6 +340,14 @@ const ImportBook = () => {
                             options={facets?.facets?.authors || []}
                             toggleLabel="Select from existing authors"
                         />
+                        <TextOrSelectInput
+                            label="Tag"
+                            name="tag"
+                            value={metadata.tag || ""}
+                            onChange={(val) => setMetadata({ ...metadata, tag: val })}
+                            options={facets?.facets?.tags || []}
+                            toggleLabel="Select from existing tags"
+                        />
                         {
                             seriesMode && <TextOrSelectInput
                                 label="Series Name"
@@ -382,18 +384,14 @@ const ImportBook = () => {
                 </>
             ) : (
                 <div className="w-full flex justify-center">
-                <button className="btn btn-primary w-1/2 my-12" onClick={handleImportClick}>
-                    <Search size={24} />
-                    Find Book(s) (.cbz) in your device
-                </button>
+                    <button className="btn btn-primary w-1/2 my-12" onClick={handleImportClick}>
+                        <Search size={24} />
+                        Find Book(s) (.cbz) in your device
+                    </button>
                 </div>
             )
         }
-
-
-
-
-    </div>
+    </PageLayout>
 }
 
 export default ImportBook;
