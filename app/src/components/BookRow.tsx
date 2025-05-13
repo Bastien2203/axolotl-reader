@@ -23,6 +23,7 @@ const BookRow = (props: BookRowProps) => {
                         alt={props.book.metadata.title}
                         className="object-cover rounded-md h-full p-1"
                         url={API_HOST + cover.href}
+                        width="10em"
                         token={localStorage.getItem("token") || ""}
                     />
                 )

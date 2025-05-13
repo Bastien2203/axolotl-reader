@@ -6,6 +6,7 @@ type SecureImageProps = {
   token: string;
   className?: string;
   alt?: string;
+  width?: string;
   onClick?: () => void;
 }
 
@@ -51,7 +52,7 @@ const SecureImage = (props: SecureImageProps) => {
   
 
 
-  return <div className="w-32 aspect-[2/3]">
+  return <div className="aspect-[2/3]" style={{width: props.width }}>
     {loading
       ? <div className="animate-pulse w-full h-full bg-base-100 rounded-md" />
       : imgUrl && <img loading="lazy" src={imgUrl} alt={props.alt} className={props.className} onClick={props.onClick}  />
