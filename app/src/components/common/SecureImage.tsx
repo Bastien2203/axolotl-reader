@@ -6,6 +6,7 @@ type SecureImageProps = {
     token: string;
     className?: string;
     alt?: string;
+    onClick?: () => void;
 }
 
 const SecureImage = (props: SecureImageProps) => {
@@ -34,7 +35,7 @@ const SecureImage = (props: SecureImageProps) => {
     
       if (!imgUrl) return <div className="animate-pulse w-32 h-32 bg-base-200 rounded-md"></div>
     
-      return <img src={imgUrl} alt={props.alt} className={props.className} />
+      return <img src={imgUrl} alt={props.alt} className={props.className} onClick={props.onClick}/>
 }
 
 export default SecureImage

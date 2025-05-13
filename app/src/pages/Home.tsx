@@ -94,14 +94,14 @@ const Home = () => {
     {lastRead && <>
       <h2 className="text-xl font-semibold">Continue reading</h2>
 
-        <div className="flex flex-col items-center hover:opacity-60 cursor-pointer w-fit" onClick={() => showReader({
-            book: lastRead,
-          })
-        }>
+        <div className="flex flex-col items-center cursor-pointer w-full">
           <SecureImage
             alt={lastRead.metadata.title}
-            className="object-cover rounded-md h-64 p-1"
+            className="object-cover rounded-md w-full max-w-xs p-1 hover:opacity-60"
             url={API_HOST + lastRead.links.filter(link => link.rel === "cover")[0].href}
+            onClick={() => showReader({
+              book: lastRead,
+            })}
             token={localStorage.getItem("token") || ""}
           />
           <h3>{lastRead.metadata.title}</h3>
