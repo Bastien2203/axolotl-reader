@@ -31,6 +31,13 @@ body{
   @apply bg-base-300
 }
 
+.reader{
+  min-width: 100vw;
+  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
+  overflow-y: scroll;
+}
 
 .pb-safe{
   padding-bottom: env(safe-area-inset-bottom);

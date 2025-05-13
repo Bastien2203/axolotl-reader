@@ -37,7 +37,7 @@ const Reader = (props: ReaderProps) => {
 
     return (
         <div
-            className="absolute z-10 top-0 left-0 w-full h-full bg-base-300 overflow-scroll pt-safe"
+            className="absolute z-10 top-0 left-0 reader bg-base-300 overflow-scroll"
             ref={scrollRef}
             onClick={showOverlay}
             onTouchStart={onTouchStart}

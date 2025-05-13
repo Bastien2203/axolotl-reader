@@ -7,7 +7,7 @@ type ReaderOverlayProps = {
 
 const ReaderOverlay = (props: ReaderOverlayProps) => (
     <>
-        <div className="fixed bg-black/60 backdrop-blur-xs w-full flex justify-between items-center px-4 py-3 pt-safe-1 z-20">
+        <div className="fixed top-0 bg-black/60 backdrop-blur-xs w-full flex justify-between items-center px-4 py-3 pt-safe-1 z-20">
 
                 <input
                     type="checkbox"
@@ -22,7 +22,7 @@ const ReaderOverlay = (props: ReaderOverlayProps) => (
             />
         </div>
         <progress
-            className="fixed progress bottom-0 progress-primary w-full z-20"
+            className="fixed progress bottom-0 pb-safe progress-primary w-full z-20"
             value={props.progress}
             max="100"
         />
