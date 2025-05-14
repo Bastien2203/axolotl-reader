@@ -20,7 +20,7 @@ const SecureImage = (props: SecureImageProps) => {
     let objectUrl: string;
     let isMounted = true;
     setLoading(true);
-  
+
     fetch(props.url, {
       headers: {
         Authorization: "Bearer " + props.token,
@@ -42,7 +42,7 @@ const SecureImage = (props: SecureImageProps) => {
         });
         setLoading(false);
       });
-  
+
     return () => {
       isMounted = false;
       if (objectUrl) {
@@ -50,15 +50,19 @@ const SecureImage = (props: SecureImageProps) => {
       }
     };
   }, [props.url, props.token]);
-  
-  
 
 
-  return <div className="overflow-clip" style={{ height: props.height, aspectRatio: props.aspectRatio ?? "3/4" }}>
+
+
+  return <div className="overflow-clip" style={{
+    height: props.height,
+    width: `calc(${props.height} * ${props.aspectRatio})`,
+    aspectRatio: props.aspectRatio ?? "3/4"
+  }}>
     {loading
       ? <div className="animate-pulse w-full h-full bg-base-100 rounded-md" />
-      : imgUrl && <img loading="lazy" src={imgUrl} alt={props.alt} className={props.className} onClick={props.onClick}  />
-       
+      : imgUrl && <img loading="lazy" src={imgUrl} alt={props.alt} className={props.className} onClick={props.onClick} />
+
     }
   </div>
 }

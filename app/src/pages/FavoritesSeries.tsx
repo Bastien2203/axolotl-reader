@@ -97,7 +97,7 @@ const FavoritesSeries = () => {
         favoriteSeries && favoriteSeries.length === 0 && lastRead === null &&
         <div className="flex flex-col items-center justify-center h-full">
           <h2 className="text-xl font-semibold">Start Reading !</h2>
-          <p className="text-gray-500">
+          <p className="text-gray-500 text-center">
             You don't have any favorite series or last read book.
             <br />
             Start exploring the library and add your favorite series.

@@ -85,33 +85,33 @@ const SeriesRow = (props: SeriesRowProps) => {
     return <tr className="border-1 border-base-content/40 border-collapse" style={{ height: "max(5em, 5em)" }}>
         <td className="hover:opacity-60 cursor-pointer w-full text-base-content" onClick={() => props.onClick()} >
             <div className="flex items-center gap-10">
-            <SecureImage
+                <SecureImage
                     token={localStorage.getItem("token") ?? ""}
                     url={API_HOST + props.series.cover}
                     alt={props.series.name}
                     className="object-cover overflow-clip  w-[5em] h-[5em] object-top"
                     height="5em"
                     aspectRatio="1/1"
-                    />
-            {props.series.name}
+                />
+                {props.series.name}
 
-            <div>
-            {
-                props.series?.tags?.slice(0, 3).map((tag, index) => (
-                     <div key={index} className="badge badge-outline badge-sm">{tag.name}</div>
-                ))
-            }
-            {
-                props.series?.tags?.length > 3 ?
-                    <div className="badge badge-outline badge-sm">+{props.series.tags.length - 3}</div>
-                    : null
-            }
-            </div>
+                <div className="hidden md:flex gap-2">
+                    {
+                        props.series?.tags?.slice(0, 3).map((tag, index) => (
+                            <div key={index} className="badge badge-outline badge-sm">{tag.name}</div>
+                        ))
+                    }
+                    {
+                        props.series?.tags?.length > 3 ?
+                            <div className="badge badge-outline badge-sm">+{props.series.tags.length - 3}</div>
+                            : null
+                    }
+                </div>
             </div>
         </td>
 
-       
-        
+
+
         <td className="px-2">
             {
                 props.user ?
