@@ -8,6 +8,7 @@ type SecureImageProps = {
   alt?: string;
   height?: string;
   onClick?: () => void;
+  aspectRatio?: string;
 }
 
 const SecureImage = (props: SecureImageProps) => {
@@ -32,8 +33,9 @@ const SecureImage = (props: SecureImageProps) => {
         setImgUrl(objectUrl);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
         if (!isMounted) return;
+        console.error("Error loading image:", err);
         showToast({
           message: "Error loading image",
           type: "alert-error",
@@ -52,7 +54,7 @@ const SecureImage = (props: SecureImageProps) => {
   
 
 
-  return <div className="aspect-[3/4]" style={{ height: props.height }}>
+  return <div className="overflow-clip" style={{ height: props.height, aspectRatio: props.aspectRatio ?? "3/4" }}>
     {loading
       ? <div className="animate-pulse w-full h-full bg-base-100 rounded-md" />
       : imgUrl && <img loading="lazy" src={imgUrl} alt={props.alt} className={props.className} onClick={props.onClick}  />

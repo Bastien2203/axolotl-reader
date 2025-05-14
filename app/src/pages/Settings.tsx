@@ -1,4 +1,4 @@
-import { LogOut } from "lucide-react";
+import { LogOut, Trash } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import {  Me } from "../types";
 import { useEffect, useState } from "react";
@@ -41,6 +41,15 @@ const settings: SettingItem[] = [
         type: "link",
         name: "Reader Settings",
         href: "reader-settings"
+    },
+    {
+        type: "button",
+        name: "Clear local storage",
+        icon: Trash,
+        color: "text-red-200",
+        action: () => {
+            localStorage.removeItem("reader-progress");
+        }
     },
     {
         type: "button",
@@ -89,13 +98,13 @@ const Settings = () => {
 
     return <PageLayout title="Settings">
         <h2 className="text-base-content/80">
-            Logged as {me?.Username}
+            Logged as {me?.username}
         </h2>
 
         <ul className="list text-base">
             {
                 settings.map((setting, index) => {
-                    if(setting.adminOnly && me?.Role != "admin") {
+                    if(setting.adminOnly && me?.role != "admin") {
                         return null
                     }
                     else if (setting.type === "link") {

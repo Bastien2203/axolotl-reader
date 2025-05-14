@@ -13,8 +13,7 @@ type Comic struct {
 	FilePath       string   `gorm:"not null"`
 	Series         Series   `gorm:"foreignKey:SeriesID"`
 	SeriesID       uint
-	SeriesPosition int   `gorm:"null"`
-	Tags           []Tag `gorm:"many2many:comic_tags"`
+	SeriesPosition int `gorm:"null"`
 }
 
 type Author struct {

@@ -21,3 +21,9 @@ docker run -d \
   --name comics-container \
   comics-app
 ```
+
+---
+
+## TODO
+
+- [ ] Add delete modal for series

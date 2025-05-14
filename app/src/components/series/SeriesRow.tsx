@@ -1,8 +1,9 @@
 import { EllipsisVertical, Heart } from "lucide-react";
-import { Me, Series } from "../../types";
+import { API_HOST, Me, Series } from "../../types";
 import { useEffect, useState } from "react";
 import { addSeriesToFavorites, deleteSeries, removeSeriesFromFavorites } from "../../services/Series";
 import { useToast } from "../../contexts/ToastContext";
+import SecureImage from "../common/SecureImage";
 
 
 
@@ -19,7 +20,7 @@ const SeriesRow = (props: SeriesRowProps) => {
 
     useEffect(() => {
         if (props.user) {
-            const isFavorite = props.user.FavoriteSeries.some((s) => s.ID == props.series.id);
+            const isFavorite = props.user.favorite_series.some((s) => s.id == props.series.id);
             setFavorite(isFavorite);
         }
     }, [props.user, props.series]);
@@ -81,12 +82,37 @@ const SeriesRow = (props: SeriesRowProps) => {
 
 
 
-    return <tr className="list-row" style={{ height: "max(10em, 10em)" }}>
+    return <tr className="border-1 border-base-content/40 border-collapse" style={{ height: "max(5em, 5em)" }}>
         <td className="hover:opacity-60 cursor-pointer w-full text-base-content" onClick={() => props.onClick()} >
+            <div className="flex items-center gap-10">
+            <SecureImage
+                    token={localStorage.getItem("token") ?? ""}
+                    url={API_HOST + props.series.cover}
+                    alt={props.series.name}
+                    className="object-cover overflow-clip  w-[5em] h-[5em] object-top"
+                    height="5em"
+                    aspectRatio="1/1"
+                    />
             {props.series.name}
+
+            <div>
+            {
+                props.series?.tags?.slice(0, 3).map((tag, index) => (
+                     <div key={index} className="badge badge-outline badge-sm">{tag.name}</div>
+                ))
+            }
+            {
+                props.series?.tags?.length > 3 ?
+                    <div className="badge badge-outline badge-sm">+{props.series.tags.length - 3}</div>
+                    : null
+            }
+            </div>
+            </div>
         </td>
 
-        <td>
+       
+        
+        <td className="px-2">
             {
                 props.user ?
                     <Heart className={`${favorite ? "fill-red-500" : ""}  cursor-pointer`} onClick={handleFavoriteChange} />
@@ -95,7 +121,7 @@ const SeriesRow = (props: SeriesRowProps) => {
         </td>
 
 
-        <td className="w-0 text-right align-center">
+        <td className="px-2">
             <div className="dropdown dropdown-end">
                 <div tabIndex={0} role="button" className="btn btn-ghost btn-sm px-2">
                     <EllipsisVertical size={20} />

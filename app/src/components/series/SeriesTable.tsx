@@ -71,7 +71,7 @@ const SeriesTable = (props: SeriesTableProps) => {
     }, [serieSelected])
 
     
-    return <table className="table table-zebra w-full">
+    return <table className="w-full">
         <tbody>
             {props.series.map((series) => (
                 <SeriesRow

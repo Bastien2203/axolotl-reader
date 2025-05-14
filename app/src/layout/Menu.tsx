@@ -1,4 +1,4 @@
-import { Download, Home, Import, LibraryBig, LogOut, Moon, Search, Settings, Sun } from "lucide-react";
+import { Download, Heart, Home, Import, LibraryBig, LogOut, Moon, Settings, Sun } from "lucide-react";
 import { useEffect } from "react";
 import {  Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { SeriesPageProvider } from "../contexts/SeriesPageContext";
@@ -6,8 +6,8 @@ import { SeriesPageProvider } from "../contexts/SeriesPageContext";
 
 const items = [
   { icon: Home, text: "Home", href: "/" },
-  { icon: Search, text: "Search", href: "/search" },
   { icon: LibraryBig , text: "Library", href: "/library" },
+  { icon: Heart, text: "Favorites", href: "/favorites" },
   { icon: Import, text: "Import", href: "/import" },
   { icon: Download, text: "Downloads", href: "/downloads" },
   { icon: Settings, text: "Settings", href: "/settings" },

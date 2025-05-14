@@ -6,8 +6,8 @@ import Settings from "./pages/Settings"
 import Downloads from "./pages/Downloads"
 import CreateUser from "./pages/settings/CreateUser"
 import Home from "./pages/Home"
-import SearchPage from "./pages/SearchPage"
 import Library from "./pages/Library"
+import FavoritesSeries from "./pages/FavoritesSeries"
 
 
 const Router = () => {
@@ -26,8 +26,8 @@ const Router = () => {
                     element: <Home />
                 },
                 {
-                    path: "/search",
-                    element: <SearchPage />
+                    path: "/favorites",
+                    element: <FavoritesSeries />
                 },
                 {
                     path: "/library",

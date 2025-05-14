@@ -1,121 +1,65 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useToast } from "../contexts/ToastContext";
 import PageLayout from "../layout/PageLayout";
-import { getLastReadBook } from "../services/Book";
-import { API_HOST, Publication, Series } from "../types";
-import SecureImage from "../components/common/SecureImage";
-import { userReader } from "../contexts/ReaderContext";
-import SeriesTable from "../components/series/SeriesTable";
-import { getMe } from "../services/Users";
+import { getFacets } from "../services/Book";
+import { Series } from "../types";
+import SeriesCarroussel from "../components/series/SeriesCarroussel";
+
 
 
 const Home = () => {
-  const [favoriteSeries, setFavoriteSeries] = useState<Series[]>();
-  const [lastRead, setLastRead] = useState<Publication | null>();
-  const location = useLocation();
+  const [series, setSeries] = useState<Record<string, Series[]>>({});
   const { showToast } = useToast();
-  const { showReader } = userReader();
-
-
-  const locationChangeHandler = () => {
-    getLastReadBook().then((book) => {
-      setLastRead(book);
-    }).catch((error) => {
-      console.error("Error fetching last read book:", error);
-      showToast({
-        type: "alert-error",
-        message: "Error fetching last read book",
-      });
-    })
-  };
-
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   useEffect(() => {
-    getLastReadBook().then((book) => {
-      setLastRead(book);
+    getFacets({ series: true }).then((data) => {
+      const seriesByTag = {} as Record<string, Series[]>;
+      data.facets.series?.forEach((series: Series) => {
+        const tags = series.tags
+        if (tags) {
+          tags.forEach((tag) => {
+            if (!seriesByTag[tag.name]) {
+              seriesByTag[tag.name] = []
+            }
+            seriesByTag[tag.name].push(series)
+          })
+        }
+      })
+      setSelectedTag(Object.keys(seriesByTag)[0] || null)
+      setSeries(seriesByTag)
     }).catch((error) => {
-      console.error("Error fetching last read book:", error);
+      console.error("Error fetching series:", error);
       showToast({
         type: "alert-error",
-        message: "Error fetching last read book",
+        message: "Error fetching series",
       });
     })
-
-    getMe().then((user) => {
-      if (user && user.FavoriteSeries) {
-        setFavoriteSeries(user.FavoriteSeries.map((series) => ({
-          name: series.Name,
-          id: series.ID,
-        })));
-      }
-    }).catch((error) => {
-      console.error("Error fetching user data:", error);
-      showToast({
-        type: "alert-error",
-        message: "Error fetching user data",
-      });
-    }
-    );
   }, []);
-
-
-  useEffect(() => {
-    locationChangeHandler();
-  }, [location]);
-
-
-
-  return <>
-    <PageLayout title="Home">
-      {lastRead && <>
-        <h2 className="text-xl font-semibold">Continue reading</h2>
-
-        <div className="flex flex-col items-center cursor-pointer w-full">
-          <SecureImage
-            alt={lastRead.metadata.title}
-            className="object-cover rounded-md w-full max-w-xs p-1 hover:opacity-60"
-            url={API_HOST + lastRead.links.filter(link => link.rel === "cover")[0].href}
-            onClick={() => showReader({
-              book: lastRead,
-            })}
-            token={localStorage.getItem("token") || ""}
-          />
-          <h3>{lastRead.metadata.title}</h3>
-        </div>
-      </>}
-
+  
+  return <PageLayout title="Library">
+    <h2 className="text-xl font-semibold">Series by categories</h2>
+    <div className="overflow-x-auto flex gap-2">
       {
-        favoriteSeries && favoriteSeries.length > 0 &&
-        <>
-          <h2 className="text-xl font-semibold">Favorites</h2>
-          <SeriesTable
-            series={favoriteSeries}
-            onSeriesChange={setFavoriteSeries}
-          />
-        </>
+        Object.keys(series).map((tag) => (
+          <div className={`badge p-4  rounded-full ${selectedTag === tag ? "badge-primary" : "badge-outline"
+            } cursor-pointer`}
+            onClick={() => {
+              setSelectedTag(tag)
+            }}
+            key={tag}>
+            {tag}
+          </div>
+        ))
       }
+    </div>
+    {
+      selectedTag && series[selectedTag] && series[selectedTag].length > 0 && (
+       <SeriesCarroussel series={series[selectedTag]} />
+      )
+    }
 
-      {
-        favoriteSeries && favoriteSeries.length === 0 && lastRead === null &&
-        <div className="flex flex-col items-center justify-center h-full">
-          <h2 className="text-xl font-semibold">Start Reading !</h2>
-          <p className="text-gray-500">
-            You don't have any favorite series or last read book.
-            <br />
-            Start exploring the library and add your favorite series.
-          </p>
-
-          <Link to="/library" className="btn btn-primary mt-4">
-            Explore Library
-          </Link>
-          
-        </div>
-      }
-
-
-    </PageLayout>
-  </>;
+  </PageLayout>
 }
 
 export default Home;

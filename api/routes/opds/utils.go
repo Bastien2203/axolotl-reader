@@ -14,25 +14,25 @@ func BuildOPDSPublication(comic models.Comic) gin.H {
 		})
 	}
 
-	var tags []map[string]any
-	for _, tag := range comic.Tags {
-		tags = append(tags, map[string]any{
-			"name": tag.Name,
-		})
-	}
-
 	metadata := gin.H{
 		"title":      comic.Title,
 		"identifier": comic.Identifier,
 		"authors":    authors,
-		"tags":       tags,
 	}
 
 	if comic.Series.ID != 0 {
+		var tags []map[string]any
+		for _, tag := range comic.Series.Tags {
+			tags = append(tags, map[string]any{
+				"name": tag.Name,
+			})
+		}
+
 		metadata["belongsTo"] = gin.H{
 			"series": gin.H{
 				"name":     comic.Series.Name,
 				"position": comic.SeriesPosition,
+				"tags":     tags,
 			},
 		}
 	}

@@ -156,12 +156,23 @@ const ImportBook = () => {
     return <PageLayout title="Import Book">
         <input ref={fileInputRef} type="file" accept=".cbz" className="hidden" onChange={handleFileInputChange} multiple />
 
-        <div className="w-full flex justify-center">
+        {
+        bookDatas.length === 0 && 
+            <div className="flex flex-col items-center justify-center h-full">
+            <h2 className="text-xl font-semibold">Import Your Books</h2>
+            <p className="text-gray-500 text-center">
+                Select and upload your comic book files (.cbz) to start building your library.
+                <br />
+                Fill in the metadata to organize your collection effectively.
+            </p>
+
             <button className="btn btn-primary w-1/2 my-12" onClick={handleImportClick}>
-                <Search size={24} />
-                Find Book(s) (.cbz) in your device
-            </button>
-        </div>
+                    <Search size={24} />
+                    Find Book(s) (.cbz) in your device
+                </button>
+            </div> 
+      }
+        
         {
             bookDatas && bookDatas.length > 0 && (
                 <>

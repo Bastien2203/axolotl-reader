@@ -17,9 +17,6 @@ export type Publication = {
         authors: {
             name: string;
         }[];
-        tags: {
-            name: string;
-        }[];
         belongsTo?: {
         series?: {
             name: string;
@@ -45,6 +42,12 @@ export type Facets = {
 export type Series = {
     name: string;
     id: string;
+    cover: string;
+    tags: Tag[];
+}
+
+export type Tag = {
+    name: string;
 }
 
 export type BookProgress = {
@@ -57,11 +60,8 @@ const env = import.meta.env.VITE_APP_ENV;
 export const API_HOST = env == "production" ? "" :  "http://localhost:8080";
 
 export type Me = {
-    ID: string;
-    Username: string;
-    Role: "user" | "admin";
-    FavoriteSeries: {
-        ID: string;
-        Name: string;
-    }[];
+    id: string;
+    username: string;
+    role: "user" | "admin";
+    favorite_series: Series[];
 }

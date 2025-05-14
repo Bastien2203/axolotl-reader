@@ -32,13 +32,27 @@ func Facets(db *gorm.DB, c *gin.Context) {
 
 	if len(filters) == 0 || filters["series"] != nil {
 		var series []models.Series
-		db.Model(&models.Series{}).Select("id", "name").Find(&series)
+		db.Model(&models.Series{}).Preload("Tags").Find(&series)
 
 		var result []map[string]interface{}
 		for _, s := range series {
+			// first comic of the series
+			var comic models.Comic
+			db.Model(&models.Comic{}).Where("series_id = ? AND series_position = 1", s.ID).Select("cover_url").First(&comic)
+
+			// get tags names
+			var tags []map[string]any
+			for _, tag := range s.Tags {
+				tags = append(tags, map[string]any{
+					"name": tag.Name,
+				})
+			}
+
 			result = append(result, map[string]interface{}{
-				"id":   s.ID,
-				"name": s.Name,
+				"id":    s.ID,
+				"name":  s.Name,
+				"cover": comic.CoverURL,
+				"tags":  tags,
 			})
 		}
 		facets["series"] = result
