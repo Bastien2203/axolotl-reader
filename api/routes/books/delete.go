@@ -23,6 +23,12 @@ func Delete(db *gorm.DB, c *gin.Context) {
 		return
 	}
 
+	DeleteComic(comic, db, c)
+
+	c.Status(http.StatusNoContent)
+}
+
+func DeleteComic(comic models.Comic, db *gorm.DB, c *gin.Context) {
 	file := comic.FilePath
 	if err := os.Remove(file); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "file deletion failed"})
@@ -35,10 +41,8 @@ func Delete(db *gorm.DB, c *gin.Context) {
 		return
 	}
 
-	if err := db.Where("identifier = ?", id).Delete(&models.Comic{}).Error; err != nil {
+	if err := db.Where("identifier = ?", comic.Identifier).Delete(&models.Comic{}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "delete failed"})
 		return
 	}
-
-	c.Status(http.StatusNoContent)
 }

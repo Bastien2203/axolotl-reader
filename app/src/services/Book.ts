@@ -1,4 +1,4 @@
-import { API_HOST, BookProgress, Catalog, Facets, Publication } from "../types";
+import { API_HOST, BookProgress, Catalog, Facets, Publication, Series } from "../types";
 
 export const PAGE_SIZE = 10;
 
@@ -117,9 +117,9 @@ export const searchBooks = async (p: {
     })
 }
 
-export const getSeries = async (seriesName: string, page: number) => {
+export const getSeries = async (series: Series, page: number) => {
     return new Promise<Catalog>((resolve, reject) => {
-        fetch(`${API_HOST}/opds/series/${encodeURIComponent(seriesName)}.json?from=${(page - 1) * PAGE_SIZE}&size=${PAGE_SIZE}`, {
+        fetch(`${API_HOST}/opds/series/${encodeURIComponent(series.id)}.json?from=${(page - 1) * PAGE_SIZE}&size=${PAGE_SIZE}`, {
             method: "GET",
             headers: {
                 "Authorization": "Bearer " + localStorage.getItem("token"),

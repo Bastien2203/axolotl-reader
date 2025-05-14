@@ -1,11 +1,13 @@
-import { Download, Home, Import, LogOut, Moon, Search, Settings, Sun } from "lucide-react";
+import { Download, Home, Import, LibraryBig, LogOut, Moon, Search, Settings, Sun } from "lucide-react";
 import { useEffect } from "react";
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import {  Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { SeriesPageProvider } from "../contexts/SeriesPageContext";
 
 
 const items = [
   { icon: Home, text: "Home", href: "/" },
   { icon: Search, text: "Search", href: "/search" },
+  { icon: LibraryBig , text: "Library", href: "/library" },
   { icon: Import, text: "Import", href: "/import" },
   { icon: Download, text: "Downloads", href: "/downloads" },
   { icon: Settings, text: "Settings", href: "/settings" },
@@ -77,7 +79,9 @@ const Menu = () => {
       </aside>
 
       <main className="flex-1 h-screen overflow-hidden pb-16 md:pb-0">
-        <Outlet />
+        <SeriesPageProvider>
+          <Outlet />
+        </SeriesPageProvider>
       </main>
     </div>
   );
@@ -87,15 +91,14 @@ const MenuItem = ({
   icon: Icon,
   text,
   selected,
-  href
+  href,
 }: {
   icon: React.FC<{ size: number }>;
   text: string;
   selected: boolean;
   href: string;
 }) => (
-  <Link
-    to={href}
+  <Link to={href}
     className={`flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${selected
         ? "bg-base-100 font-medium"
         : "hover:bg-base-200 text-base-content"

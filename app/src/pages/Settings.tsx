@@ -1,10 +1,11 @@
 import { LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { API_HOST, Me } from "../types";
+import {  Me } from "../types";
 import { useEffect, useState } from "react";
 import { useToast } from "../contexts/ToastContext";
 import Spinner from "../components/common/Spinner";
 import PageLayout from "../layout/PageLayout";
+import { getMe } from "../services/Users";
 
 interface Setting {
     type: "link" | "button";
@@ -66,28 +67,14 @@ const Settings = () => {
             return;
         }
 
-        fetch(`${API_HOST}/users/me`, {
-            method: "GET",
-            headers: {
-                "Content-Type" : "application/json",
-                "Authorization" : "Bearer " + token
-            }
-        }).then((res) => {
-            if(res.status == 200) {
-                return res.json()
-            } else {
-                showToast({
-                    message: "Error while getting user info",
-                    type: "alert-error"
-                })
-            }
-        }).then((res) => {
-            setMe(res.user)
-            console.log(res.user)
-        }).catch(() => showToast({
+        getMe().then((user) => {
+            setMe(user)
+        }).catch(() => {
+            showToast({
                 message: "Error while getting user info",
                 type: "alert-error"
-            }))
+            })
+        })
     }, [])
 
 

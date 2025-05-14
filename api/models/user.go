@@ -7,9 +7,10 @@ import (
 
 type User struct {
 	gorm.Model
-	Username string `gorm:"unique;not null"`
-	Password string `gorm:"not null"`
-	Role     string `gorm:"default:'user'"`
+	Username       string   `gorm:"unique;not null"`
+	Password       string   `gorm:"not null"`
+	Role           string   `gorm:"default:'user'"`
+	FavoriteSeries []Series `gorm:"many2many:user_favorite_series"`
 }
 
 func (u *User) BeforeCreate(tx *gorm.DB) (err error) {

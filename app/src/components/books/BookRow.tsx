@@ -1,6 +1,7 @@
 import { EllipsisVertical } from "lucide-react";
-import { API_HOST, Publication } from "../types";
-import SecureImage from "./common/SecureImage";
+import SecureImage from "../common/SecureImage";
+import { Publication, API_HOST } from "../../types";
+
 
 
 type BookRowProps = {

@@ -10,46 +10,43 @@ import (
 )
 
 func Facets(db *gorm.DB, c *gin.Context) {
-	var all = make(map[string]interface{})
-	if c.Query("authors") != "" {
-		all["authors"] = c.Query("authors")
+	filters := make(map[string]interface{})
+	if v := c.Query("authors"); v != "" {
+		filters["authors"] = v
 	}
-
-	if c.Query("series") != "" {
-		fmt.Println("series", c.Query("series"))
-		all["series"] = c.Query("series")
+	if v := c.Query("series"); v != "" {
+		fmt.Println("series", v)
+		filters["series"] = v
 	}
-	if c.Query("tags") != "" {
-		all["tags"] = c.Query("tags")
+	if v := c.Query("tags"); v != "" {
+		filters["tags"] = v
 	}
-
-	var authors []string
-	var series []string
-	var tags []string
 
 	facets := make(map[string]any)
-	fmt.Println("all", all)
 
-	if len(all) == 0 || all["authors"] != nil {
-		db.Model(&models.Author{}).
-			Distinct().
-			Pluck("name", &authors)
+	if len(filters) == 0 || filters["authors"] != nil {
+		var authors []string
+		db.Model(&models.Author{}).Distinct().Pluck("name", &authors)
 		facets["authors"] = authors
 	}
 
-	if len(all) == 0 || all["series"] != nil {
-		db.Model(&models.Comic{}).
-			Distinct().
-			Where("series_name != ''").
-			Where("series_name IS NOT NULL").
-			Pluck("series_name", &series)
-		facets["series"] = series
+	if len(filters) == 0 || filters["series"] != nil {
+		var series []models.Series
+		db.Model(&models.Series{}).Select("id", "name").Find(&series)
+
+		var result []map[string]interface{}
+		for _, s := range series {
+			result = append(result, map[string]interface{}{
+				"id":   s.ID,
+				"name": s.Name,
+			})
+		}
+		facets["series"] = result
 	}
 
-	if len(all) == 0 || all["tags"] != nil {
-		db.Model(&models.Tag{}).
-			Distinct().
-			Pluck("name", &tags)
+	if len(filters) == 0 || filters["tags"] != nil {
+		var tags []string
+		db.Model(&models.Tag{}).Distinct().Pluck("name", &tags)
 		facets["tags"] = tags
 	}
 

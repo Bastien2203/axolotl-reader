@@ -28,10 +28,10 @@ func BuildOPDSPublication(comic models.Comic) gin.H {
 		"tags":       tags,
 	}
 
-	if comic.SeriesName != "" {
+	if comic.Series.ID != 0 {
 		metadata["belongsTo"] = gin.H{
 			"series": gin.H{
-				"name":     comic.SeriesName,
+				"name":     comic.Series.Name,
 				"position": comic.SeriesPosition,
 			},
 		}

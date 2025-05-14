@@ -1,7 +1,6 @@
 package opds
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -32,14 +31,13 @@ func GetSeries(db *gorm.DB, c *gin.Context) {
 		return
 	}
 
-	seriesName := strings.TrimSuffix(c.Param("name"), ".json")
-	fmt.Println("Series name:", seriesName)
+	seriesId := strings.TrimSuffix(c.Param("id"), ".json")
 
 	var comics []models.Comic
 	db.
 		Limit(sizeInt).
 		Offset(fromInt).
-		Where("series_name = ?", seriesName).
+		Where("series_id = ?", seriesId).
 		Order("series_position ASC").
 		Preload("Authors").
 		Preload("Tags").
@@ -47,7 +45,7 @@ func GetSeries(db *gorm.DB, c *gin.Context) {
 
 	var total int64
 	db.Model(&models.Comic{}).
-		Where("series_name = ?", seriesName).
+		Where("series_id = ?", seriesId).
 		Count(&total)
 
 	publications := make([]gin.H, len(comics))
@@ -57,7 +55,7 @@ func GetSeries(db *gorm.DB, c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"metadata": gin.H{
-			"title": "Series: " + seriesName,
+			"title": "Series: " + seriesId,
 			"total": total,
 			"size":  sizeInt,
 			"from":  fromInt,

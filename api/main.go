@@ -11,6 +11,7 @@ import (
 	"github.com/Bastien2203/comics-reader/models"
 	"github.com/Bastien2203/comics-reader/routes/books"
 	"github.com/Bastien2203/comics-reader/routes/opds"
+	"github.com/Bastien2203/comics-reader/routes/series"
 	"github.com/Bastien2203/comics-reader/routes/users"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -43,6 +44,7 @@ func main() {
 	db.AutoMigrate(&models.User{})
 	db.AutoMigrate(&models.Author{})
 	db.AutoMigrate(&models.Tag{})
+	db.AutoMigrate(&models.Series{})
 
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
@@ -67,7 +69,7 @@ func main() {
 		opdsGroup.GET("/catalog.json", func(c *gin.Context) { opds.Catalog(db, c) })
 		opdsGroup.GET("/facets.json", func(c *gin.Context) { opds.Facets(db, c) })
 		opdsGroup.GET("/search.json", func(c *gin.Context) { opds.Search(db, c) })
-		opdsGroup.GET("/series/:name", func(c *gin.Context) { opds.GetSeries(db, c) })
+		opdsGroup.GET("/series/:id", func(c *gin.Context) { opds.GetSeries(db, c) })
 	}
 
 	booksGroup := r.Group("/books", middleware.AuthRequired)
@@ -76,8 +78,15 @@ func main() {
 		booksGroup.DELETE("/:id", func(c *gin.Context) { books.Delete(db, c) })
 	}
 
+	seriesGroup := r.Group("/series", middleware.AuthRequired)
+	{
+		seriesGroup.DELETE("/:id", func(c *gin.Context) { series.Delete(db, c) })
+	}
+
 	usersGroup := r.Group("/users")
 	{
+		usersGroup.POST("/add_favorite_series/:id", middleware.AuthRequired, func(c *gin.Context) { users.AddFavoriteSeries(db, c) })
+		usersGroup.DELETE("/remove_favorite_series/:id", middleware.AuthRequired, func(c *gin.Context) { users.RemoveFavoriteSeries(db, c) })
 		usersGroup.POST("/login", func(c *gin.Context) { users.Login(db, c) })
 		usersGroup.POST("/register", func(c *gin.Context) { users.Register(db, c) })
 		usersGroup.GET("/can_register", func(c *gin.Context) { users.CanRegister(db, c) })

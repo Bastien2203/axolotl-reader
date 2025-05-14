@@ -1,26 +1,28 @@
-import { Publication } from "../types";
-import BookTable from "./BookTable";
+import { Publication, Series } from "../../types";
 import { useEffect, useState } from "react";
-import { getSeries, PAGE_SIZE } from "../services/Book";
-import Spinner from "./common/Spinner";
-import Pagination from "./Pagination";
-import PageLayout from "../layout/PageLayout";
+import { getSeries, PAGE_SIZE } from "../../services/Book";
+import Spinner from "../common/Spinner";
+import Pagination from "../common/Pagination";
+import PageLayout from "../../layout/PageLayout";
+import BookTable from "../books/BookTable";
+import { useLocation } from "react-router-dom";
 
 
-type SeriesProps = {
-    seriesName: string;
+type SeriesPageProps = {
+    series: Series;
     onBack?: () => void;
 }
 
 
 
-const Series = (props: SeriesProps) => {
+const SeriesPage = (props: SeriesPageProps) => {
     const [books, setBooks] = useState<Publication[]>();
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(0);
+    const location = useLocation();
 
     useEffect(() => {
-        getSeries(props.seriesName, page).then((data) => {
+        getSeries(props.series, page).then((data) => {
             setTotalPages(Math.ceil(data.metadata.total / PAGE_SIZE));
             setBooks(data.publications || []);
         }
@@ -29,7 +31,13 @@ const Series = (props: SeriesProps) => {
         });
     }, [page]);
 
-    return <PageLayout title={props.seriesName} onBack={props.onBack}>
+    useEffect(() => {
+        if (location.search === "" && books) {
+            props.onBack && props.onBack();
+        }
+    }, [location]);
+
+    return <PageLayout title={props.series.name} onBack={props.onBack}>
         {books ? <>
             <BookTable books={books} onBooksChange={setBooks} />
             <Pagination
@@ -46,4 +54,4 @@ const Series = (props: SeriesProps) => {
 
 }
 
-export default Series;
+export default SeriesPage;

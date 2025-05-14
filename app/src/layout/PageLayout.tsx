@@ -29,7 +29,6 @@ const PageLayout = (props: PropsWithChildren<PageLayoutProps>) => (
                 props.children
             }
         </div>
-        
     </>
 )
 

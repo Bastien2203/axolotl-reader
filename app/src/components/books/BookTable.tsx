@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
-import { userReader } from "../contexts/ReaderContext";
-import { useToast } from "../contexts/ToastContext";
-import { downloadBook, getBookProgress, getFacets, setBookProgress } from "../services/Book";
-import { Facets, Publication } from "../types";
-import BookRow from "./BookRow";
-import DeleteBookModal from "./modals/DeleteBookModal";
+import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import SelectFacetsModal from "./modals/SelectFacetsModal";
-import FacetsFilter from "./FacetsFilter";
+import { userReader } from "../../contexts/ReaderContext";
+import { useToast } from "../../contexts/ToastContext";
+import { setBookProgress, getFacets, getBookProgress, downloadBook } from "../../services/Book";
+import { Publication, Facets } from "../../types";
+import FacetsFilter from "../FacetsFilter";
+import DeleteBookModal from "../modals/DeleteBookModal";
+import SelectFacetsModal from "../modals/SelectFacetsModal";
+import BookRow from "./BookRow";
+
 
 type BookTableProps = {
     books: Publication[];

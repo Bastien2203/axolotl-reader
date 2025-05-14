@@ -35,11 +35,13 @@ func Catalog(db *gorm.DB, c *gin.Context) {
 	db.
 		Limit(sizeInt).
 		Offset(fromInt).
-		Order("series_name ASC").
-		Order("series_position ASC").
-		Order("title ASC").
+		Preload("Series").
 		Preload("Authors").
 		Preload("Tags").
+		Joins("JOIN series ON series.id = comics.series_id").
+		Order("series.name ASC").
+		Order("series_position ASC").
+		Order("title ASC").
 		Find(&comics)
 
 	var total int64

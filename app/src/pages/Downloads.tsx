@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Publication } from "../types";
-import BookTable from "../components/BookTable";
 import { getDownloadedBooks } from "../services/Book";
 import { useToast } from "../contexts/ToastContext";
 import PageLayout from "../layout/PageLayout";
+import BookTable from "../components/books/BookTable";
 
 
 

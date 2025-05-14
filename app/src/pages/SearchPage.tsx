@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import PageLayout from "../layout/PageLayout";
 import { Publication, Catalog } from "../types";
 import { useNavigate } from "react-router-dom";
-import BookTable from "../components/BookTable";
 import Spinner from "../components/common/Spinner";
-import Pagination from "../components/Pagination";
+import Pagination from "../components/common/Pagination";
 import { getBooks, searchBooks } from "../services/Book";
 import { useToast } from "../contexts/ToastContext";
+import BookTable from "../components/books/BookTable";
 
 const PAGE_SIZE = 10;
 

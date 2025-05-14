@@ -306,7 +306,7 @@ const ImportBook = () => {
                                 name="seriesName"
                                 value={metadata.seriesName || ""}
                                 onChange={(val) => setMetadata({ ...metadata, seriesName: val })}
-                                options={facets?.facets?.series || []}
+                                options={facets?.facets?.series?.map(e => e.name) || []}
                                 toggleLabel="Select from existing series"
                             />
                         }

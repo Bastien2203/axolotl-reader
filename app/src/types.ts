@@ -37,9 +37,14 @@ export type Publication = {
 export type Facets = {
     facets: {
         authors?: string[]
-        series?: string[]
+        series?: Series[]
         tags?: string[]
     }
+}
+
+export type Series = {
+    name: string;
+    id: string;
 }
 
 export type BookProgress = {
@@ -55,5 +60,8 @@ export type Me = {
     ID: string;
     Username: string;
     Role: "user" | "admin";
-
+    FavoriteSeries: {
+        ID: string;
+        Name: string;
+    }[];
 }

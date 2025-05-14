@@ -17,7 +17,7 @@ func Me(db *gorm.DB, c *gin.Context) {
 	}
 
 	var user models.User
-	if err := db.First(&user, userID).Error; err != nil {
+	if err := db.Preload("FavoriteSeries").First(&user, userID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not retrieve user"})
 		return
 	}

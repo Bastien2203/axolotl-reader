@@ -113,6 +113,16 @@ func Upload(db *gorm.DB, c *gin.Context) {
 		}
 	}
 
+	series := models.Series{}
+	if seriesName != "" {
+		series = models.Series{Name: seriesName}
+		if err := db.Where(models.Series{Name: seriesName}).FirstOrCreate(&series).Error; err != nil {
+			log.Error(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "db insert failed"})
+			return
+		}
+	}
+
 	comic := models.Comic{
 		Title:          title,
 		Authors:        authorsList,
@@ -121,7 +131,7 @@ func Upload(db *gorm.DB, c *gin.Context) {
 		FileURL:        bookUrl,
 		FilePath:       bookPath,
 		CoverPath:      coverPath,
-		SeriesName:     seriesName,
+		Series:         series,
 		SeriesPosition: seriesPosition,
 		Tags:           tagsList,
 	}

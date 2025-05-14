@@ -11,9 +11,10 @@ type Comic struct {
 	FileURL        string   `gorm:"not null"`
 	CoverPath      string   `gorm:"not null"`
 	FilePath       string   `gorm:"not null"`
-	SeriesName     string   `gorm:"null"`
-	SeriesPosition int      `gorm:"null"`
-	Tags           []Tag    `gorm:"many2many:comic_tags"`
+	Series         Series   `gorm:"foreignKey:SeriesID"`
+	SeriesID       uint
+	SeriesPosition int   `gorm:"null"`
+	Tags           []Tag `gorm:"many2many:comic_tags"`
 }
 
 type Author struct {
@@ -23,5 +24,11 @@ type Author struct {
 
 type Tag struct {
 	ID   uint   `gorm:"primaryKey"`
+	Name string `gorm:"unique;not null"`
+}
+
+type Series struct {
+	ID   uint   `gorm:"primaryKey"`
+	Tags []Tag  `gorm:"many2many:comic_tags"`
 	Name string `gorm:"unique;not null"`
 }

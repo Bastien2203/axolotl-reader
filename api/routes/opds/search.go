@@ -47,11 +47,13 @@ func Search(db *gorm.DB, c *gin.Context) {
 	db.
 		Preload("Authors").
 		Preload("Tags").
+		Preload("Series").
+		Joins("JOIN series ON series.id = comics.series_id").
 		Joins("JOIN comic_authors ON comic_authors.comic_id = comics.id").
 		Joins("JOIN authors ON authors.id = comic_authors.author_id").
 		Limit(sizeInt).
 		Offset(fromInt).
-		Order("series_name ASC").
+		Order("series.name ASC").
 		Order("series_position ASC").
 		Order("title ASC").
 		Where("title LIKE ? OR authors.name LIKE ?", pattern, pattern).

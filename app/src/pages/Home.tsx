@@ -1,34 +1,24 @@
 import { useEffect, useState } from "react";
-import Series from "../components/Series";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useToast } from "../contexts/ToastContext";
-
 import PageLayout from "../layout/PageLayout";
-import { getFacets, getLastReadBook } from "../services/Book";
-import { API_HOST, Publication } from "../types";
+import { getLastReadBook } from "../services/Book";
+import { API_HOST, Publication, Series } from "../types";
 import SecureImage from "../components/common/SecureImage";
 import { userReader } from "../contexts/ReaderContext";
-
+import SeriesTable from "../components/series/SeriesTable";
+import { getMe } from "../services/Users";
 
 
 const Home = () => {
-  const [series, setSeries] = useState<string[]>([]);
-  const [serieSelected, setSerieSelected] = useState<string | null>(null);
-  const [lastRead, setLastRead] = useState<Publication | null>(null);
+  const [favoriteSeries, setFavoriteSeries] = useState<Series[]>();
+  const [lastRead, setLastRead] = useState<Publication | null>();
   const location = useLocation();
   const { showToast } = useToast();
-  const {showReader} = userReader();
+  const { showReader } = userReader();
+
 
   const locationChangeHandler = () => {
-    const url = new URL(window.location.href);
-    const seriesName = url.searchParams.get("series");
-
-    if (seriesName && series && series.includes(seriesName)) {
-      setSerieSelected(seriesName);
-    } else {
-      setSerieSelected(null);
-    }
-
     getLastReadBook().then((book) => {
       setLastRead(book);
     }).catch((error) => {
@@ -42,15 +32,6 @@ const Home = () => {
 
 
   useEffect(() => {
-    getFacets({series: true}).then((data) => {
-      setSeries(data.facets.series || []);
-    }).catch((error) => {
-      console.error("Error fetching series:", error);
-      showToast({
-        type: "alert-error",
-        message: "Error fetching series",
-      });
-    })
     getLastReadBook().then((book) => {
       setLastRead(book);
     }).catch((error) => {
@@ -60,39 +41,35 @@ const Home = () => {
         message: "Error fetching last read book",
       });
     })
+
+    getMe().then((user) => {
+      if (user && user.FavoriteSeries) {
+        setFavoriteSeries(user.FavoriteSeries.map((series) => ({
+          name: series.Name,
+          id: series.ID,
+        })));
+      }
+    }).catch((error) => {
+      console.error("Error fetching user data:", error);
+      showToast({
+        type: "alert-error",
+        message: "Error fetching user data",
+      });
+    }
+    );
   }, []);
 
-  useEffect(() => {
-    if (series.length === 0) return;
-    locationChangeHandler();
-  }, [series]);
 
   useEffect(() => {
     locationChangeHandler();
   }, [location]);
 
-  const selectSeries = (seriesName: string) => {
-    setSerieSelected(seriesName);
 
-    const url = new URL(window.location.href);
-    url.searchParams.set("series", seriesName);
-    window.history.pushState({}, "", url.toString());
-  };
-  const backToLibrary = () => {
-    setSerieSelected(null);
-    const url = new URL(window.location.href);
-    url.searchParams.delete("series");
-    window.history.pushState({}, "", url.toString());
-  };
-
-  if (serieSelected !== null) {
-    return <Series seriesName={serieSelected} onBack={backToLibrary} />
-  }
 
   return <>
     <PageLayout title="Home">
-    {lastRead && <>
-      <h2 className="text-xl font-semibold">Continue reading</h2>
+      {lastRead && <>
+        <h2 className="text-xl font-semibold">Continue reading</h2>
 
         <div className="flex flex-col items-center cursor-pointer w-full">
           <SecureImage
@@ -106,14 +83,36 @@ const Home = () => {
           />
           <h3>{lastRead.metadata.title}</h3>
         </div>
-      </> }
+      </>}
 
-      <h2 className="text-xl font-semibold">Series</h2>
-      {series.map((seriesName) => (
-        <div key={seriesName} onClick={() => selectSeries(seriesName)} className="flex flex-col gap-2 p-4 border border-base-100 rounded-md cursor-pointer hover:bg-base-100">
-          <h4 className="text-lg font-semibold">{seriesName}</h4>
+      {
+        favoriteSeries && favoriteSeries.length > 0 &&
+        <>
+          <h2 className="text-xl font-semibold">Favorites</h2>
+          <SeriesTable
+            series={favoriteSeries}
+            onSeriesChange={setFavoriteSeries}
+          />
+        </>
+      }
+
+      {
+        favoriteSeries && favoriteSeries.length === 0 && lastRead === null &&
+        <div className="flex flex-col items-center justify-center h-full">
+          <h2 className="text-xl font-semibold">Start Reading !</h2>
+          <p className="text-gray-500">
+            You don't have any favorite series or last read book.
+            <br />
+            Start exploring the library and add your favorite series.
+          </p>
+
+          <Link to="/library" className="btn btn-primary mt-4">
+            Explore Library
+          </Link>
+          
         </div>
-      ))}
+      }
+
 
     </PageLayout>
   </>;
