@@ -1,10 +1,10 @@
-import { Facets } from "../types";
+import { Facets, Series } from "../types";
 
 
 export type FacetsFilterProps = {
     type: "authors" | "series" | "tags";
     facets: Facets;
-    onFacetsButtonClick: (type: "authors" | "series" | "tags", values: string[]) => void;
+    onFacetsButtonClick: (type: "authors" | "series" | "tags", values: string[] | Series[]) => void;
     selectedFacets: Facets | null;
     onSelectedFacetsChange: (facets: Facets | null) => void;
 };
@@ -33,12 +33,12 @@ const FacetsFilter = ({ type, facets, onFacetsButtonClick, selectedFacets, onSel
                 Filter by {type}
             </button>
             {selectedTypeFacets.length > 0 && (
-                selectedTypeFacets.map((facet) => (
-                    <span key={facet} className="h-full bg-secondary rounded p-2 px-4 flex gap-2">
-                        {facet}
+                selectedTypeFacets.map((facet,i) => (
+                    <span key={i} className="h-full bg-secondary rounded p-2 px-4 flex gap-2">
+                        {typeof facet === "string" ? facet : facet.name}
                         <button
                             className="btn btn-xs btn-circle btn-ghost"
-                            onClick={() => handleRemoveFacet(facet)}
+                            onClick={() => handleRemoveFacet(typeof facet === "string" ? facet : facet.name)}
                         >
                             ✕
                         </button>

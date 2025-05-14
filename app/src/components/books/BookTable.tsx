@@ -2,22 +2,15 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { userReader } from "../../contexts/ReaderContext";
 import { useToast } from "../../contexts/ToastContext";
-import { setBookProgress, getFacets, getBookProgress, downloadBook } from "../../services/Book";
-import { Publication, Facets } from "../../types";
-import FacetsFilter from "../FacetsFilter";
+import { setBookProgress, getBookProgress, downloadBook } from "../../services/Book";
+import { Publication } from "../../types";
 import DeleteBookModal from "../modals/DeleteBookModal";
-import SelectFacetsModal from "../modals/SelectFacetsModal";
 import BookRow from "./BookRow";
 
 
 type BookTableProps = {
     books: Publication[];
     onBooksChange: (books: Publication[]) => void;
-    facets?: {
-        authors?: boolean
-        series?: boolean
-        tags?: boolean
-    }
 }
 
 const BookTable = (props: BookTableProps) => {
@@ -25,13 +18,6 @@ const BookTable = (props: BookTableProps) => {
     const { showToast } = useToast()
     const location = useLocation();
     const [deleteModalOpen, setDeleteModalOpen] = useState<string | null>(null);
-    const [facets, setFacets] = useState<Facets | null>(null);
-    const [facetsModalOpen, setFacetsModalOpen] = useState<{
-        type: "authors" | "series" | "tags",
-        values: string[]
-    } | null>(null);
-    const [selectedFacets, setSelectedFacets] = useState<Facets | null>(null);
-
 
     const locationChangeHandler = () => {
         const url = new URL(window.location.href);
@@ -53,20 +39,6 @@ const BookTable = (props: BookTableProps) => {
     }
 
     useEffect(() => {
-        if (props.facets) {
-            getFacets(props.facets).then((data) => {
-                setFacets(data);
-            }
-            ).catch(() => {
-                showToast({
-                    type: "alert-error",
-                    message: "Error fetching facets",
-                })
-            })
-        }
-    }, [props.facets]);
-
-    useEffect(() => {
         if (props.books.length === 0) return;
         locationChangeHandler();
     }, [props.books]);
@@ -84,38 +56,6 @@ const BookTable = (props: BookTableProps) => {
             deleteModalOpen={deleteModalOpen}
             setDeleteModalOpen={setDeleteModalOpen}
         />
-        <SelectFacetsModal
-            facetsModalOpen={facetsModalOpen}
-            setFacetsModalOpen={setFacetsModalOpen}
-            selectedFacets={selectedFacets}
-            setSelectedFacets={setSelectedFacets}
-        />
-        <>
-            {facets && (
-                <div className="flex flex-col gap-2 mb-4">
-                    {
-                        Object.entries(facets.facets).map(([key]) => {
-                            return <FacetsFilter
-                                key={key}
-                                type={key as "series" | "tags" | "authors"}
-                                facets={facets}
-                                onFacetsButtonClick={(type, values) => {
-                                    setFacetsModalOpen({
-                                        type,
-                                        values
-                                    })
-                                }}
-                                selectedFacets={selectedFacets}
-                                onSelectedFacetsChange={setSelectedFacets}
-                            />
-                        })
-                    }
-
-
-                </div>
-            )}
-
-        </>
         <table className="table table-zebra w-full">
             <tbody>
                 {props.books.map((book, i) => (
