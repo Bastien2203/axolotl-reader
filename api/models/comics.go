@@ -29,6 +29,6 @@ type Tag struct {
 
 type Series struct {
 	ID   uint   `gorm:"primaryKey"`
-	Tags []Tag  `gorm:"many2many:comic_tags"`
+	Tags []Tag  `gorm:"many2many:series_tags"`
 	Name string `gorm:"unique;not null"`
 }

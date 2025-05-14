@@ -40,11 +40,7 @@ func main() {
 	if err != nil {
 		panic("failed to connect database")
 	}
-	db.AutoMigrate(&models.Comic{})
-	db.AutoMigrate(&models.User{})
-	db.AutoMigrate(&models.Author{})
-	db.AutoMigrate(&models.Tag{})
-	db.AutoMigrate(&models.Series{})
+	db.AutoMigrate(&models.Comic{}, &models.Tag{}, &models.Author{}, &models.Series{}, &models.User{})
 
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
