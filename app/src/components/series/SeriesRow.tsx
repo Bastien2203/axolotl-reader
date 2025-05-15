@@ -93,7 +93,7 @@ const SeriesRow = (props: SeriesRowProps) => {
                     height="5em"
                     aspectRatio="1/1"
                 />
-                <span className="truncate">
+                <span className="truncate w-[30vw]">
                     {props.series.name}
                 </span>
                 <div className="hidden md:flex gap-2">
