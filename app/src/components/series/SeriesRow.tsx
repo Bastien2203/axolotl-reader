@@ -84,7 +84,7 @@ const SeriesRow = (props: SeriesRowProps) => {
 
     return <tr className="border-1 border-base-content/40 border-collapse" style={{ height: "max(5em, 5em)" }}>
         <td className="hover:opacity-60 cursor-pointer w-full text-base-content" onClick={() => props.onClick()} >
-            <div className="flex items-center gap-10">
+            <div className="flex items-center gap-10 ">
                 <SecureImage
                     token={localStorage.getItem("token") ?? ""}
                     url={API_HOST + props.series.cover}
@@ -93,8 +93,9 @@ const SeriesRow = (props: SeriesRowProps) => {
                     height="5em"
                     aspectRatio="1/1"
                 />
-                {props.series.name}
-
+                <span className="truncate">
+                    {props.series.name}
+                </span>
                 <div className="hidden md:flex gap-2">
                     {
                         props.series?.tags?.slice(0, 3).map((tag, index) => (
