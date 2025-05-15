@@ -8,6 +8,7 @@ import CreateUser from "./pages/settings/CreateUser"
 import Home from "./pages/Home"
 import Library from "./pages/Library"
 import FavoritesSeries from "./pages/FavoritesSeries"
+import ErrorPage from "./pages/errors/ErrorPage"
 
 
 const Router = () => {
@@ -20,6 +21,7 @@ const Router = () => {
         {
             path: "/",
             element: <Menu />,
+            errorElement: <ErrorPage/>,
             children: [
                 {
                     path: "/",

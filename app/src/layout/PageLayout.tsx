@@ -2,7 +2,7 @@ import { ArrowLeft } from "lucide-react"
 import { PropsWithChildren } from "react"
 
 type PageLayoutProps = {
-    title: string
+    title?: string
     onBack?: () => void
 }
 
@@ -23,11 +23,14 @@ const PageLayout = (props: PropsWithChildren<PageLayoutProps>) => (
                 !props.onBack && <img src="/icon.png" alt="icon" className="h-12 block md:hidden" />
             }
 
-            <h1 className="text-2xl font-bold">{props.title}</h1>
+            {
+                props.title && <h1 className="text-2xl font-bold">{props.title}</h1>
+            }
+
         </div>
         <div className="p-4 space-y-6 mt-[5.5rem] pb-[10em] overflow-auto" style={{ height: "calc(100dvh - 5.5rem)" }}>            {
-                props.children
-            }
+            props.children
+        }
         </div>
     </>
 )
