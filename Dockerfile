@@ -1,7 +1,7 @@
 ########################################################################
-# 1) Build Frontend (Node + Vite)
+# Frontend Build (Node + Vite)
 ########################################################################
-FROM node:23.11-alpine AS node-builder
+FROM --platform=$BUILDPLATFORM node:23.11-alpine AS node-builder
 
 WORKDIR /app
 COPY app/package.json ./
@@ -14,7 +14,7 @@ COPY app/ .
 RUN npm run build
 
 ########################################################################
-# 2) Build Backend (Go)
+# Backend Build (Go)
 ########################################################################
 FROM golang:1.23-alpine AS go-builder
 
