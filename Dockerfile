@@ -35,11 +35,7 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 # go-sqlite3 requires cgo to work
-ENV CGO_ENABLED=1
-ENV GOARCH=arm64
-ENV GOOS=linux
-
-RUN go build -o api ./main.go
+RUN CGO_ENABLED=1 go build -o api ./main.go
 
 ########################################################################
 # 3) Final image (Debian)                                              #
