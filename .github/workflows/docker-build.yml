@@ -2,7 +2,7 @@ name: Build & Push Docker Image (Multi-Arch)
 
 on:
   push:
-    branches: [never]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
