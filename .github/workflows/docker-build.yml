@@ -28,6 +28,6 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/arm/v7,linux/arm64,linux/amd64
+          platforms: linux/arm64,linux/amd64
           push: true
           tags: ghcr.io/bastien2203/axolotl-reader:latest
