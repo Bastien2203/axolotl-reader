@@ -41,8 +41,10 @@ RUN go mod download
 
 COPY api/ .
 RUN apt-get update \
- && apt-get install -y gcc libc6-dev \
+ && apt-get install -y gcc-arm-linux-gnueabihf libc6-dev-armhf-cross \
  && rm -rf /var/lib/apt/lists/*
+
+ENV CC=arm-linux-gnueabihf-gcc
 
 RUN go build -o api ./main.go
 
