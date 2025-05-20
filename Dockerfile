@@ -7,7 +7,7 @@ FROM --platform=$BUILDPLATFORM node:23.11-alpine AS node-builder
 WORKDIR /app
 COPY app/package.json ./
 COPY app/package-lock.json ./
-RUN npm ci
+RUN npm install
 
 ENV VITE_APP_ENV=production
 
