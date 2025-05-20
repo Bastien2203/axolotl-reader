@@ -1,4 +1,4 @@
-name: Build & Push Docker Image (Multi-Arch)
+name: Build & Push Docker Image (ARMv7 only)
 
 on:
   push:
@@ -9,7 +9,6 @@ permissions:
   contents: read
   packages: write
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,7 +17,7 @@ jobs:
 
       - uses: docker/setup-qemu-action@v3
         with:
-          platforms: linux/amd64,linux/arm/v7
+          platforms: linux/arm/v7
 
       - uses: docker/setup-buildx-action@v3
 
@@ -28,15 +27,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build & push multi-arch
-      - name: Buildx multi-arch image
+      - name: Build & Push ARMv7 image
         uses: docker/build-push-action@v5
         with:
           context: .
-          file: ./Dockerfile
-          platforms: linux/amd64,linux/arm/v7
+          file: ./Dockerfile-armv7
+          platforms: linux/arm/v7
           push: true
           tags: ghcr.io/bastien2203/axolotl-reader:latest
-          build-args: |
-            BUILDKIT_INLINE_CACHE=1
-            TARGETOS=linux

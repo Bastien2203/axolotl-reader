@@ -2,7 +2,7 @@
 # 1) Build Frontend (Node + Vite)                                      #
 ########################################################################
 ARG BUILDPLATFORM
-FROM --platform=${BUILDPLATFORM} node:23.11-bullseye-slim AS node-builder
+FROM --platform=linux/arm/v7 node:23.11-bullseye-slim AS node-builder
 
 WORKDIR /app
 COPY app/package.json app/package-lock.json ./
@@ -23,17 +23,12 @@ RUN npm run build
 ########################################################################
 # 2) Build Backend (Go)                                                #
 ########################################################################
-FROM --platform=${BUILDPLATFORM} golang:1.23-bullseye AS go-builder
+FROM --platform=linux/arm/v7 golang:1.23-bullseye AS go-builder
 
-ARG TARGETOS
-ARG TARGETARCH
-ARG TARGETVARIANT
-
-# go-sqlite3 requires cgo to work
 ENV CGO_ENABLED=1
-ENV GOOS=${TARGETOS}
-ENV GOARCH=${TARGETARCH}
-ENV GOARM=${TARGETVARIANT##v}
+ENV GOOS=linux
+ENV GOARCH=arm
+ENV GOARM=7
 
 WORKDIR /app
 COPY api/go.mod api/go.sum ./
@@ -41,22 +36,15 @@ RUN go mod download
 
 COPY api/ .
 RUN apt-get update && \
-    if [ "$TARGETARCH" = "arm" ]; then \
-      apt-get install -y gcc-arm-linux-gnueabihf libc6-dev-armhf-cross && \
-      export CC=arm-linux-gnueabihf-gcc ; \
-    else \
-      apt-get install -y gcc libc6-dev && \
-      export CC=gcc ; \
-    fi && \
+    apt-get install -y gcc-arm-linux-gnueabihf libc6-dev-armhf-cross && \
+    export CC=arm-linux-gnueabihf-gcc && \
     go build -o api ./main.go && \
     rm -rf /var/lib/apt/lists/*
-
-RUN go build -o api ./main.go
 
 ########################################################################
 # 3) Final image (Debian)                                              #
 ########################################################################
-FROM --platform=${TARGETPLATFORM} debian:bullseye-slim
+FROM --platform=linux/arm/v7 debian:bullseye-slim
 
 WORKDIR /app
 
