@@ -25,6 +25,16 @@ RUN npm run build
 ########################################################################
 FROM --platform=${BUILDPLATFORM} golang:1.23-bullseye AS go-builder
 
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
+
+# go-sqlite3 requires cgo to work
+ENV CGO_ENABLED=1
+ENV GOOS=${TARGETOS}
+ENV GOARCH=${TARGETARCH}
+ENV GOARM=${TARGETVARIANT##v}
+
 WORKDIR /app
 COPY api/go.mod api/go.sum ./
 RUN go mod download
@@ -33,13 +43,6 @@ COPY api/ .
 RUN apt-get update \
  && apt-get install -y gcc libc6-dev \
  && rm -rf /var/lib/apt/lists/*
-
-# go-sqlite3 requires cgo to work
-# TODO: fix this to be multi-arch (for now, only arm/7)
-ENV GOOS=linux
-ENV GOARCH=arm
-ENV GOARM=7
-ENV CGO_ENABLED=1
 
 RUN go build -o api ./main.go
 
