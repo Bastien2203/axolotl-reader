@@ -38,13 +38,6 @@ ENV CGO_ENABLED=0
 ENV GOARCH=arm64
 ENV GOOS=linux
 
-ENV ENV=production
-ENV BOOK_DIRECTORY="data"
-ENV COVER_DIRECTORY="covers"
-ENV DATABASE_PATH="comics.db"
-ENV JWT_TOKEN="your_jwt_secret"
-ENV API_HOST="https://axolotl.bastiengrisvard.com"
-
 RUN go build -o api ./main.go
 
 ########################################################################
@@ -53,6 +46,13 @@ RUN go build -o api ./main.go
 FROM --platform=${TARGETPLATFORM} debian:bullseye-slim
 
 WORKDIR /app
+
+ENV ENV="production"
+ENV BOOK_DIRECTORY="data"
+ENV COVER_DIRECTORY="covers"
+ENV DATABASE_PATH="comics.db"
+ENV JWT_TOKEN="your_jwt_secret"
+ENV API_HOST="https://axolotl.bastiengrisvard.com"
 
 
 COPY --from=go-builder /app/api    ./api

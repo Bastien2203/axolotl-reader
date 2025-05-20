@@ -38,14 +38,13 @@ touch data/comics.db
 ```
 
 ```sh
-docker build -t comics-app .
 docker run -d \
   -p 8080:8080 \
   -v $(pwd)/data/comics.db:/app/comics.db \
   -v $(pwd)/data/books:/app/data \
   -v $(pwd)/data/covers:/app/covers \
-  --name comics-container \
-  comics-app
+  --name axolotl-reader \
+  ghcr.io/bastien2203/axolotl-reader:latest
 ```
 
 ---
@@ -53,7 +52,11 @@ docker run -d \
 ## TODO
 
 - [ ] Add delete modal for series
-- [ ] Pagnination for series (and favorites)
-- [ ] Remove facets route (replace by real opds version)
+- [ ] Pagnination for series (and favorites) in frontend
+- [ ] Remove facets route (replace by real opds version) (for import book)
 - [ ] Repare downloads
-- [ ] In upload route, add logic to set series cover to the first book cover
+- [ ] Add reading progress in the API
+- [ ] Actually series cover is the first book cover
+- [ ] Add Bulk import for series
+
+- [ ] Remove JWT_TOKEN env var from Dockerfile and get it from docker run 
