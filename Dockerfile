@@ -34,7 +34,8 @@ RUN apt-get update \
  && apt-get install -y gcc libc6-dev \
  && rm -rf /var/lib/apt/lists/*
 
-ENV CGO_ENABLED=0
+# go-sqlite3 requires cgo to work
+ENV CGO_ENABLED=1
 ENV GOARCH=arm64
 ENV GOOS=linux
 

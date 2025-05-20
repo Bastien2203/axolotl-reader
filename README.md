@@ -39,13 +39,16 @@ touch data/comics.db
 
 ```sh
 docker run -d \
-  -p 8080:8080 \
+  -p 8888:8080 \
   -v $(pwd)/data/comics.db:/app/comics.db \
   -v $(pwd)/data/books:/app/data \
   -v $(pwd)/data/covers:/app/covers \
+  --restart always \
   --name axolotl-reader \
   ghcr.io/bastien2203/axolotl-reader:latest
 ```
+
+
 
 ---
 
