@@ -2,20 +2,14 @@
 # 1) Build Frontend (Node + Vite)                                      #
 ########################################################################
 ARG BUILDPLATFORM
-FROM --platform=linux/amd64 node:23.11-bullseye-slim AS node-builder
+FROM --platform=$BUILDPLATFORM node:23.11-alpine AS node-builder
 
 WORKDIR /app
 COPY app/package.json app/package-lock.json ./
 
 ENV VITE_APP_ENV=production
 
-
-RUN apt-get update \
-  && apt-get install -y python3 make g++ \
-  && npm install --ignore-scripts \
-  && npm rebuild \
-  && rm -rf /var/lib/apt/lists/*
-
+RUN npm ci
 
 COPY app/ .
 RUN npm run build
@@ -23,46 +17,42 @@ RUN npm run build
 ########################################################################
 # 2) Build Backend (Go)                                                #
 ########################################################################
-FROM --platform=linux/arm/v7 golang:1.23-bullseye AS go-builder
+FROM --platform=$BUILDPLATFORM golang:1.23-alpine AS go-builder
 
-ENV CGO_ENABLED=1
-ENV GOOS=linux
-ENV GOARCH=arm
-ENV GOARM=7
+RUN apk add --no-cache gcc musl-dev sqlite-dev
 
 WORKDIR /app
 COPY api/go.mod api/go.sum ./
 RUN go mod download
 
 COPY api/ .
-RUN apt-get update && \
-    apt-get install -y gcc-arm-linux-gnueabihf libc6-dev-armhf-cross && \
-    export CC=arm-linux-gnueabihf-gcc && \
-    go build -o api ./main.go && \
-    rm -rf /var/lib/apt/lists/*
+
+ENV GOOS=linux \
+    GOARCH=arm \
+    GOARM=7 \
+    CGO_ENABLED=1   
+
+RUN go build -o api ./main.go
 
 ########################################################################
 # 3) Final image (Debian)                                              #
 ########################################################################
-FROM --platform=linux/arm/v7 debian:bullseye-slim
+FROM --platform=$BUILDPLATFORM alpine:3.21
+
+RUN apk add --no-cache sqlite
 
 WORKDIR /app
 
-ENV ENV="production"
-ENV BOOK_DIRECTORY="data"
-ENV COVER_DIRECTORY="covers"
-ENV DATABASE_PATH="comics.db"
-ENV JWT_TOKEN="your_jwt_secret"
-ENV API_HOST="https://axolotl.bastiengrisvard.com"
-ENV GIN_MODE=release
+ENV ENV="production" \
+    BOOK_DIRECTORY="data" \
+    COVER_DIRECTORY="covers" \
+    DATABASE_PATH="comics.db" \
+    JWT_TOKEN="your_jwt_secret" \
+    API_HOST="https://axolotl.bastiengrisvard.com" \
+    GIN_MODE=release
 
 COPY --from=go-builder /app/api    ./api
 COPY --from=node-builder /app/dist ./dist
-
-
-RUN apt-get update \
- && apt-get install -y ca-certificates \
- && rm -rf /var/lib/apt/lists/*
 
 EXPOSE 8080
 CMD ["./api"]
