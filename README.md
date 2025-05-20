@@ -3,7 +3,33 @@
     <h1 style="border: none;">Axolotl Reader</h1>
 </div>
 
-## Run the app (Docker)
+
+## Run development
+
+```sh
+mkdir -p api/data
+mkdir api/covers
+touch api/comics.db
+```
+
+### Backend
+```sh
+cd api
+go mod tidy
+go run main.go
+```
+
+### Frontend
+```sh
+cd app
+npm install
+npm run dev
+```
+
+
+
+
+## Run Production (Docker)
 
 ```sh
 mkdir -p data/books

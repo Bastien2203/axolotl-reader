@@ -5,16 +5,17 @@ ARG BUILDPLATFORM
 FROM --platform=${BUILDPLATFORM} node:23.11-bullseye-slim AS node-builder
 
 WORKDIR /app
-COPY app/package*.json ./
+COPY app/package.json app/package-lock.json ./
 
 ENV VITE_APP_ENV=production
 
-# dépendances natives libérées lors du build pour l'arch cible
+
 RUN apt-get update \
- && apt-get install -y python3 make g++ \
- && npm ci --ignore-scripts \
- && npm rebuild \
- && rm -rf /var/lib/apt/lists/*
+  && apt-get install -y python3 make g++ \
+  && npm install --ignore-scripts \
+  && npm rebuild \
+  && rm -rf /var/lib/apt/lists/*
+
 
 COPY app/ .
 RUN npm run build
@@ -33,7 +34,7 @@ RUN apt-get update \
  && apt-get install -y gcc libc6-dev \
  && rm -rf /var/lib/apt/lists/*
 
-# forcé à activer CGO pour l'arch cible
+
 ARG TARGETARCH
 ARG TARGETVARIANT
 ENV GOOS=linux CGO_ENABLED=1 GOARCH=${TARGETARCH} GOARM=${TARGETVARIANT#v}
@@ -54,11 +55,11 @@ FROM --platform=${TARGETPLATFORM} debian:bullseye-slim
 
 WORKDIR /app
 
-# binaires + assets
+
 COPY --from=go-builder /app/api    ./api
 COPY --from=node-builder /app/dist ./dist
 
-# runtime deps
+
 RUN apt-get update \
  && apt-get install -y ca-certificates \
  && rm -rf /var/lib/apt/lists/*
