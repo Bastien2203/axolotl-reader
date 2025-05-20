@@ -1,8 +1,7 @@
 ########################################################################
-# 1) Build Frontend (Node + Vite)                                      #
+# 1) Build Frontend (Node + Vite)
 ########################################################################
-ARG BUILDPLATFORM
-FROM --platform=$BUILDPLATFORM node:23.11-alpine AS node-builder
+FROM node:23.11-alpine AS node-builder
 
 WORKDIR /app
 COPY app/package.json ./
@@ -11,16 +10,19 @@ RUN npm install
 
 ENV VITE_APP_ENV=production
 
-
 COPY app/ .
 RUN npm run build
 
 ########################################################################
-# 2) Build Backend (Go)                                                #
+# 2) Build Backend (Go)
 ########################################################################
-FROM --platform=linux/arm/v7 golang:1.23-alpine AS go-builder
+FROM golang:1.23-alpine AS go-builder
 
-RUN apk add --no-cache \
+ARG TARGETOS
+ARG TARGETARCH
+ARG TARGETVARIANT
+
+RUN apk add --no-cache --virtual .build-deps \
     gcc \
     musl-dev \
     sqlite-dev \
@@ -34,19 +36,20 @@ RUN go mod download
 
 COPY api/ .
 
+RUN echo "TARGETARCH=$TARGETARCH VARIANT=$TARGETVARIANT"
 ENV CGO_ENABLED=1 \
-    GOOS=linux \
-    GOARCH=arm \
-    GOARM=7
+    GOOS=$TARGETOS \
+    GOARCH=$TARGETARCH 
 
-RUN go build -o api ./main.go
+RUN if [ "$TARGETARCH" = "arm" ]; then export GOARM="${TARGETVARIANT#v}"; fi && \
+    go build -o api .
 
 ########################################################################
-# 3) Final image (Debian)                                              #
+# 3) Final image (Alpine)
 ########################################################################
-FROM --platform=$BUILDPLATFORM alpine:3.21
+FROM alpine:3.21
 
-RUN apk add --no-cache sqlite
+RUN apk add --no-cache --virtual .runtime-deps sqlite
 
 WORKDIR /app
 
