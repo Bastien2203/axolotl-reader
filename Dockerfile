@@ -5,11 +5,12 @@ ARG BUILDPLATFORM
 FROM --platform=$BUILDPLATFORM node:23.11-alpine AS node-builder
 
 WORKDIR /app
-COPY app/package.json app/package-lock.json ./
+COPY app/package.json ./
+COPY app/package-lock.json ./
+RUN npm ci
 
 ENV VITE_APP_ENV=production
 
-RUN npm ci
 
 COPY app/ .
 RUN npm run build
