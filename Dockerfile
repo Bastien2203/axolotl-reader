@@ -23,7 +23,7 @@ RUN npm run build
 ########################################################################
 # 2) Build Backend (Go)                                                #
 ########################################################################
-FROM golang:1.23-bullseye AS go-builder
+FROM --platform=${BUILDPLATFORM} golang:1.23-bullseye AS go-builder
 
 WORKDIR /app
 COPY api/go.mod api/go.sum ./
@@ -40,7 +40,7 @@ RUN CGO_ENABLED=1 go build -o api ./main.go
 ########################################################################
 # 3) Final image (Debian)                                              #
 ########################################################################
-FROM debian:bullseye-slim
+FROM --platform=${TARGETPLATFORM} debian:bullseye-slim
 
 WORKDIR /app
 
