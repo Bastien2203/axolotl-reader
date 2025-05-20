@@ -23,7 +23,7 @@ RUN npm run build
 ########################################################################
 # 2) Build Backend (Go)                                                #
 ########################################################################
-FROM --platform=${BUILDPLATFORM} golang:1.23-bullseye AS go-builder
+FROM golang:1.23-bullseye AS go-builder
 
 WORKDIR /app
 COPY api/go.mod api/go.sum ./
@@ -35,18 +35,12 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 # go-sqlite3 requires cgo to work
-ARG TARGETPLATFORM
-RUN echo "Target platform: $TARGETPLATFORM"
-RUN --mount=type=cache,target=/root/.cache \
-  GOARCH=$(echo ${TARGETPLATFORM} | cut -d'/' -f2) \
-  CGO_ENABLED=1 \
-  go build -o api ./main.go
-
+RUN CGO_ENABLED=1 go build -o api ./main.go
 
 ########################################################################
 # 3) Final image (Debian)                                              #
 ########################################################################
-FROM --platform=${TARGETPLATFORM} debian:bullseye-slim
+FROM debian:bullseye-slim
 
 WORKDIR /app
 
