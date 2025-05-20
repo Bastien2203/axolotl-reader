@@ -40,11 +40,16 @@ COPY api/go.mod api/go.sum ./
 RUN go mod download
 
 COPY api/ .
-RUN apt-get update \
- && apt-get install -y gcc-arm-linux-gnueabihf libc6-dev-armhf-cross \
- && rm -rf /var/lib/apt/lists/*
-
-ENV CC=arm-linux-gnueabihf-gcc
+RUN apt-get update && \
+    if [ "$TARGETARCH" = "arm" ]; then \
+      apt-get install -y gcc-arm-linux-gnueabihf libc6-dev-armhf-cross && \
+      export CC=arm-linux-gnueabihf-gcc ; \
+    else \
+      apt-get install -y gcc libc6-dev && \
+      export CC=gcc ; \
+    fi && \
+    go build -o api ./main.go && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN go build -o api ./main.go
 
