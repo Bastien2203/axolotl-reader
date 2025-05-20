@@ -25,7 +25,7 @@ export type BookProgress = {
 
 
 const env = import.meta.env.VITE_APP_ENV;
-export const API_HOST = env == "production" ? "" : "http://localhost:8080";
+export const API_HOST = env == "production" ? "https://axolotl.bastiengrisvard.com" : "http://localhost:8080";
 
 export type User = {
     id: string;
