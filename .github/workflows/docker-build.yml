@@ -1,4 +1,4 @@
-name: Build & Push Docker Image (ARMv7 only)
+name: Build & Push Docker Image
 
 on:
   push:
