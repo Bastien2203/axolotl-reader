@@ -1,7 +1,7 @@
 ########################################################################
 # Frontend Build (Node + Vite)
 ########################################################################
-FROM --platform=$BUILDPLATFORM node:23.11-alpine AS node-builder
+FROM --platform=$BUILDPLATFORM node:22.15-alpine AS node-builder
 
 WORKDIR /app
 COPY app/package.json ./

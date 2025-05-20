@@ -1,41 +1,20 @@
 <div style="display: flex; flex-direction: column; align-items: center; justify-content:center; border-bottom: 1px solid #ccc; padding-bottom: 1em; margin-bottom: 2em; width: 100%;">
-    <img src="./icon.png" alt="Logo" width="200"/> 
+    <img src="./.github/images/icon.png" alt="Logo" width="200"/> 
     <h1 style="border: none;">Axolotl Reader</h1>
 </div>
 
 
-## Run development
+## Getting started
 
-```sh
-mkdir -p api/data
-mkdir api/covers
-touch api/comics.db
-```
-
-### Backend
-```sh
-cd api
-go mod tidy
-go run main.go
-```
-
-### Frontend
-```sh
-cd app
-npm install
-npm run dev
-```
-
-
-
-
-## Run Production (Docker)
+Create directories that will be used to store the database and the books:
 
 ```sh
 mkdir -p data/books
 mkdir data/covers
 touch data/comics.db
 ```
+
+Run the lastest version of the docker image:
 
 ```sh
 docker run -d \
@@ -49,17 +28,62 @@ docker run -d \
 ```
 
 
+## Development
+
+// TODO : Add a real dev environment
+
+
+
+```sh
+mkdir -p api/data
+mkdir api/covers
+touch api/comics.db
+```
+
+### Backend (Go + Gin + Gorm + Sqlite)
+
+- Go 1.23.0
+- Sqlite 3
+
+```sh
+cd api
+go mod tidy
+go run main.go
+```
+
+### Frontend (React + TS + Vite)
+
+- Node >=22.15.0
+
+```sh
+cd app
+npm install
+npm run dev
+```
+
 
 ---
 
 ## TODO
 
-- [ ] Add delete modal for series
-- [ ] Pagnination for series (and favorites) in frontend
-- [ ] Remove facets route (replace by real opds version) (for import book)
-- [ ] Repare downloads
-- [ ] Add reading progress in the API
-- [ ] Actually series cover is the first book cover
+### Backend
+- [ ] Remove facets route when frontend finished removing the usage
+- [ ] Add reading progress in the API (should be also available offline in the app)
+- [ ] Actually series cover is the first book cover, we should add a dedicated field for it
 - [ ] Add Bulk import for series
+- [ ] Actually its possible to add a book that is not part of a series, does we want to keep this ? (it needs to be fixed in the frontend too)
 
+
+### Frontend
+- [ ] Add delete modal for series
+- [ ] Pagnination for series (in library and favorites)
+- [ ] Create a dedicated route in the Router for series (actually its conditionnaly rendered)
+- [ ] Create a dedicated route in the Router for the reader (actually its conditionnaly rendered)
+- [ ] In ImportBook instead of using facets routes, get all tags/seriesNames/authors from the REST Api routes
+- [ ] Add downloads possibility 
+- [ ] Fix the PWA (dont works offline for now)
+
+
+### Ops
 - [ ] Remove JWT_TOKEN env var from Dockerfile and get it from docker run 
+- [ ] Build time for arm64 is too long 
