@@ -1,36 +1,3 @@
-
-
-export type Catalog = {
-    publications: Publication[];
-    metadata : {
-        title: string;
-        total: number;
-        size: number;
-        from: number;
-    }
-}
-
-export type Publication = {
-    metadata: {
-        title: string;
-        identifier: string;
-        authors: {
-            name: string;
-        }[];
-        belongsTo?: {
-        series?: {
-            name: string;
-            position?: number;
-        };
-        };
-    };
-    links: {
-        rel: string;
-        href: string;
-        type: string;
-    }[];
-};
-
 export type Facets = {
     facets: {
         authors?: string[]
@@ -42,9 +9,10 @@ export type Facets = {
 export type Series = {
     name: string;
     id: string;
-    cover: string;
+    cover_url: string;
     tags: Tag[];
 }
+
 
 export type Tag = {
     name: string;
@@ -57,11 +25,21 @@ export type BookProgress = {
 
 
 const env = import.meta.env.VITE_APP_ENV;
-export const API_HOST = env == "production" ? "" :  "http://localhost:8080";
+export const API_HOST = env == "production" ? "" : "http://localhost:8080";
 
-export type Me = {
+export type User = {
     id: string;
     username: string;
     role: "user" | "admin";
-    favorite_series: Series[];
 }
+
+
+export type Job = {
+    name: string;
+    state: JobState;
+    created_at: string;
+    finished_at: string;
+    duration: number;
+}
+
+export type JobState = "Pending" | "Running" | "Completed" | "Failed" | "Unknown";

@@ -10,14 +10,15 @@ import (
 
 	"strings"
 
-	"github.com/Bastien2203/comics-reader/log"
+	"github.com/Bastien2203/comics-reader/logs"
+	"go.uber.org/zap"
 	_ "golang.org/x/image/webp"
 )
 
 func GetFirstImageFromCBZ(path string) image.Image {
 	r, err := zip.OpenReader(path)
 	if err != nil {
-		log.Error(err)
+		logs.Logger.Error("failed to open cbz file", zap.String("path", path), zap.Error(err))
 		return nil
 	}
 	defer r.Close()
@@ -42,6 +43,7 @@ func GetFirstImageFromCBZ(path string) image.Image {
 		if err == nil {
 			return img
 		}
+		logs.Logger.Error("failed to decode image", zap.String("file", f.Name), zap.Error(err))
 	}
 
 	return nil

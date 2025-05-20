@@ -4,11 +4,12 @@ import ImportBook from "./pages/ImportBook"
 import Login from "./pages/Login"
 import Settings from "./pages/Settings"
 import Downloads from "./pages/Downloads"
-import CreateUser from "./pages/settings/CreateUser"
 import Home from "./pages/Home"
 import Library from "./pages/Library"
 import FavoritesSeries from "./pages/FavoritesSeries"
 import ErrorPage from "./pages/errors/ErrorPage"
+import ManageUsers from "./pages/settings/ManageUsers"
+import Jobs from "./pages/settings/Jobs"
 
 
 const Router = () => {
@@ -47,8 +48,12 @@ const Router = () => {
                             element: <Settings />
                         },
                         {
-                            path: "create-user",
-                            element: <CreateUser />
+                            path: "manage-users",
+                            element: <ManageUsers />
+                        },
+                        {
+                            path: "jobs",
+                            element: <Jobs/>
                         }
                     ]
                 },

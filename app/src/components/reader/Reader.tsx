@@ -1,14 +1,14 @@
 import { useCallback, useRef, useState } from "react";
-import { Publication } from "../../types"
 import { useAutoHideOverlay } from "../../hooks/reader/useAutoHideOverlay";
 import { useBookLoader } from "../../hooks/reader/useBookLoader";
 import { useImageProgress } from "../../hooks/reader/useImageProgress";
 import ReaderOverlay from "./ReaderOverlay";
 import { useTap } from "../../hooks/reader/useTap";
+import { Publication } from "../../services/OPDS";
 
 
 type ReaderProps = {
-    book: Publication;
+    publication: Publication;
     onClose?: () => void;
     onNext?: () => void;
     onPrev?: () => void;
@@ -21,9 +21,9 @@ const Reader = (props: ReaderProps) => {
     const showOverlay = useCallback(() => setOverlay(true), []);
     const { onTouchStart, onTouchEnd } = useTap(showOverlay);
 
-    const { images, loading } = useBookLoader(props.book);
+    const { images, loading } = useBookLoader(props.publication);
     useAutoHideOverlay(overlay, loading, () => setOverlay(false));
-    useImageProgress(images, scrollRef, props.book, setProgress);
+    useImageProgress(images, scrollRef, props.publication, setProgress);
 
 
     if (loading) {

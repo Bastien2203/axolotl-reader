@@ -1,6 +1,6 @@
 import { LogOut, Trash } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import {  Me } from "../types";
+import {  User } from "../types";
 import { useEffect, useState } from "react";
 import { useToast } from "../contexts/ToastContext";
 import Spinner from "../components/common/Spinner";
@@ -28,8 +28,8 @@ type SettingItem = LinkSetting | ButtonSetting;
 const settings: SettingItem[] = [
     {
         type: "link",
-        name: "Create User",
-        href: "create-user",
+        name: "Manage Users",
+        href: "manage-users",
         adminOnly: true
     },
     {
@@ -41,6 +41,12 @@ const settings: SettingItem[] = [
         type: "link",
         name: "Reader Settings",
         href: "reader-settings"
+    },
+    {
+        type: "link",
+        name: "Jobs",
+        adminOnly: true,
+        href: "jobs"
     },
     {
         type: "button",
@@ -65,7 +71,7 @@ const settings: SettingItem[] = [
 
 const Settings = () => {
 
-    const [me, setMe] = useState<Me>();
+    const [me, setMe] = useState<User>();
     const navigate = useNavigate();
     const {showToast} = useToast()
 

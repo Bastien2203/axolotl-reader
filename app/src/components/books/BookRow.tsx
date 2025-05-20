@@ -1,6 +1,6 @@
 import { EllipsisVertical } from "lucide-react";
 import SecureImage from "../common/SecureImage";
-import { Publication, API_HOST } from "../../types";
+import { Publication } from "../../services/OPDS";
 
 
 
@@ -14,27 +14,21 @@ type BookRowProps = {
 }
 
 const BookRow = (props: BookRowProps) => {
-    const cover = props.book.links.filter(link => link.rel === "cover")[0]
 
-    return <tr className="list-row" style={{ height: "max(15vw, 10em)"}}>
+
+    return <tr className="list-row" style={{ height: "max(15vw, 10em)" }}>
         <td className="flex justify-between hover:opacity-60 cursor-pointer w-full" onClick={() => props.openBook?.()} >
-            {
-                cover && (
-                    <SecureImage
-                        alt={props.book.metadata.title}
-                        className="object-cover rounded-md h-full p-1"
-                        url={API_HOST + cover.href}
-                        height="max(15vw, 10em)"
-                        token={localStorage.getItem("token") || ""}
-                    />
-                )
-            }
-
-
+            <SecureImage
+                alt={props.book.metadata.title}
+                className="object-cover rounded-md h-full p-1"
+                url={props.book.cover?.href ?? ""}
+                height="max(15vw, 10em)"
+                token={localStorage.getItem("token") || ""}
+            />
 
             <span className="text-base-content flex flex-col gap-1 items-start justify-center truncate">
                 {props.book.metadata.title}
-                    <span  className="text-base-content opacity-60 text-sm">{props.book.metadata.authors.map(a => a.name).join(", ") || "Unknown Author"}</span>
+                <span className="text-base-content opacity-60 text-sm">{props.book.metadata.authors?.join(", ") || "Unknown Author"}</span>
                 <br />
                 {
                     props.progress && props.progress > 0 &&
@@ -66,7 +60,7 @@ const BookRow = (props: BookRowProps) => {
                     }
 
                     {
-                        props.markAsRead && props.progress !== 100 && 
+                        props.markAsRead && props.progress !== 100 &&
                         <li>
                             <a onClick={() => props.markAsRead?.()}>
                                 Mark as Read

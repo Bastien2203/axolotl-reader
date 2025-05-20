@@ -1,17 +1,17 @@
 import { EllipsisVertical, Heart } from "lucide-react";
-import { API_HOST, Me, Series } from "../../types";
 import { useEffect, useState } from "react";
 import { addSeriesToFavorites, deleteSeries, removeSeriesFromFavorites } from "../../services/Series";
 import { useToast } from "../../contexts/ToastContext";
 import SecureImage from "../common/SecureImage";
+import { Publication } from "../../services/OPDS";
 
 
 
 type SeriesRowProps = {
-    series: Series;
+    publication: Publication;
     onClick: () => void;
     onDelete?: () => void;
-    user: Me | null;
+    favorites: Publication[] | null;
 }
 
 const SeriesRow = (props: SeriesRowProps) => {
@@ -19,15 +19,15 @@ const SeriesRow = (props: SeriesRowProps) => {
     const { showToast } = useToast();
 
     useEffect(() => {
-        if (props.user) {
-            const isFavorite = props.user.favorite_series.some((s) => s.id == props.series.id);
+        if (props.favorites) {
+            const isFavorite = props.favorites.some((favorite) => favorite.id === props.publication.id);
             setFavorite(isFavorite);
         }
-    }, [props.user, props.series]);
+    }, [props.favorites, props.publication]);
 
 
     const handleDeleteSeries = () => {
-        deleteSeries(props.series).then(() => {
+        deleteSeries(props.publication).then(() => {
             showToast({
                 type: "alert-success",
                 message: "Series deleted successfully",
@@ -46,10 +46,18 @@ const SeriesRow = (props: SeriesRowProps) => {
     }
 
     const handleFavoriteChange = () => {
+        if (!props.publication) {
+            showToast({
+                type: "alert-error",
+                message: "Error: No series found",
+            });
+            return;
+        }
+
         const newstate = !favorite;
         setFavorite(newstate);
         if (newstate) {
-            addSeriesToFavorites(props.series).then(() => {
+            addSeriesToFavorites(props.publication).then(() => {
                 showToast({
                     type: "alert-success",
                     message: "Series added to favorites successfully",
@@ -62,7 +70,7 @@ const SeriesRow = (props: SeriesRowProps) => {
                 });
             })
         } else {
-            removeSeriesFromFavorites(props.series).then(() => {
+            removeSeriesFromFavorites(props.publication).then(() => {
                 showToast({
                     type: "alert-success",
                     message: "Series removed from favorites successfully",
@@ -87,24 +95,24 @@ const SeriesRow = (props: SeriesRowProps) => {
             <div className="flex items-center gap-10 ">
                 <SecureImage
                     token={localStorage.getItem("token") ?? ""}
-                    url={API_HOST + props.series.cover}
-                    alt={props.series.name}
+                    url={props.publication.cover?.href ?? ""}
+                    alt={props.publication.metadata.title}
                     className="object-cover overflow-clip  w-[5em] h-[5em] object-top"
                     height="5em"
                     aspectRatio="1/1"
                 />
                 <span className="truncate w-[30vw]">
-                    {props.series.name}
+                    {props.publication?.metadata.title}
                 </span>
                 <div className="hidden md:flex gap-2">
                     {
-                        props.series?.tags?.slice(0, 3).map((tag, index) => (
-                            <div key={index} className="badge badge-outline badge-sm">{tag.name}</div>
+                        props.publication?.metadata?.tags?.slice(0, 3).map((tag, index) => (
+                            <div key={index} className="badge badge-outline badge-sm">{tag}</div>
                         ))
                     }
                     {
-                        props.series?.tags?.length > 3 ?
-                            <div className="badge badge-outline badge-sm">+{props.series.tags.length - 3}</div>
+                        props.publication?.metadata?.tags?.length && props.publication.metadata.tags.length > 3 ?
+                            <div className="badge badge-outline badge-sm">+{props.publication.metadata.tags.length - 3}</div>
                             : null
                     }
                 </div>
@@ -115,7 +123,7 @@ const SeriesRow = (props: SeriesRowProps) => {
 
         <td className="px-2">
             {
-                props.user ?
+                props.favorites ?
                     <Heart className={`${favorite ? "fill-red-500" : ""}  cursor-pointer`} onClick={handleFavoriteChange} />
                     : <Heart className={`fill-slate-600`} onClick={handleFavoriteChange} />
             }

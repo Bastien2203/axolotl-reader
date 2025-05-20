@@ -1,7 +1,9 @@
-import { API_HOST, Series } from "../types";
+import { API_HOST } from "../types";
+import { Feed, Publication } from "./OPDS";
 
 
-export const deleteSeries = async (series: Series) => {
+
+export const deleteSeries = async (series: Publication) => {
     return new Promise<void>(async (resolve, reject) => {
         const token = localStorage.getItem("token");
         const response = await fetch(`${API_HOST}/series/${series.id}`, {
@@ -20,10 +22,10 @@ export const deleteSeries = async (series: Series) => {
     })
 }
 
-export const addSeriesToFavorites = async (series: Series) => {
+export const addSeriesToFavorites = async (series: Publication) => {
     return new Promise<void>(async (resolve, reject) => {
         const token = localStorage.getItem("token");
-        const response = await fetch(`${API_HOST}/users/add_favorite_series/${series.id}`, {
+        const response = await fetch(`${API_HOST}/users/favorites/${series.id}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -39,10 +41,10 @@ export const addSeriesToFavorites = async (series: Series) => {
     })
 }
 
-export const removeSeriesFromFavorites = async (series: Series) => {
+export const removeSeriesFromFavorites = async (series: Publication) => {
     return new Promise<void>(async (resolve, reject) => {
         const token = localStorage.getItem("token");
-        const response = await fetch(`${API_HOST}/users/remove_favorite_series/${series.id}`, {
+        const response = await fetch(`${API_HOST}/users/favorites/${series.id}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
@@ -55,5 +57,26 @@ export const removeSeriesFromFavorites = async (series: Series) => {
         }
 
         resolve();
+    })
+}
+
+
+export const getFavorites = async () => {
+    return new Promise<Feed>(async (resolve, reject) => {
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${API_HOST}/users/favorites`, {
+            method: "GET",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (!response.ok) {
+            reject(new Error("Failed to fetch favorites"));
+        }
+
+        const data = await response.json();
+        resolve(Feed.fromJSON(data));
     })
 }

@@ -1,20 +1,20 @@
 import { useEffect, useState } from "react";
-import { Me, Series } from "../../types";
 import SeriesRow from "./SeriesRow";
-import { getMe } from "../../services/Users";
 import { useToast } from "../../contexts/ToastContext";
 import { useSeriesPage } from "../../contexts/SeriesPageContext";
 import { useNavigate } from "react-router-dom";
+import { Feed, Publication } from "../../services/OPDS";
+import { getFavorites } from "../../services/Series";
 
 
 type SeriesTableProps = {
-    series: Series[];
-    onSeriesChange: (series: Series[]) => void;
+    feed: Feed;
+    onFeedChange: (feed: Feed) => void;
 }
 
 const SeriesTable = (props: SeriesTableProps) => {
-    const [serieSelected, setSerieSelected] = useState<Series | null>(null);
-    const [me, setMe] = useState<Me | null>(null);
+    const [serieSelected, setSerieSelected] = useState<Publication | null>(null);
+    const [favorites, setFavorite] = useState<Publication[] | null>(null);
     const { showToast } = useToast();
     const { showPage, hidePage } = useSeriesPage()
     const navigate = useNavigate();
@@ -23,8 +23,8 @@ const SeriesTable = (props: SeriesTableProps) => {
         const url = new URL(window.location.href);
         const seriesId = url.searchParams.get("series");
 
-        const _selectedSeries = props.series.find(s => s.id == seriesId);
-        if (seriesId && props.series && _selectedSeries) {
+        const _selectedSeries = props.feed.publications?.find(s => s.id == seriesId);
+        if (seriesId && props.feed.publications && _selectedSeries) {
             setSerieSelected(_selectedSeries);
         } else {
             setSerieSelected(null);
@@ -33,7 +33,7 @@ const SeriesTable = (props: SeriesTableProps) => {
     }
 
 
-    const selectSeries = (series: Series) => {
+    const selectSeries = (series: Publication) => {
         setSerieSelected(series);
         navigate(`?series=${series.id}`);
     };
@@ -45,14 +45,14 @@ const SeriesTable = (props: SeriesTableProps) => {
     };
 
     useEffect(() => {
-        if (props.series.length === 0) return;
+        if (props.feed.publications?.length === 0) return;
         locationChangeHandler();
-    }, [props.series]);
+    }, [props.feed.publications]);
 
 
     useEffect(() => {
-        getMe().then((user) => {
-            setMe(user)
+        getFavorites().then((favoritesFeed) => {
+            setFavorite(favoritesFeed?.publications || []);
         }).catch(() => {
             showToast({
                 message: "Error while getting user info",
@@ -64,24 +64,29 @@ const SeriesTable = (props: SeriesTableProps) => {
     useEffect(() => {
         if (serieSelected !== null) {
             showPage({
-                series: serieSelected,
+                publication: serieSelected,
                 onBack: goBack,
             });
         }
     }, [serieSelected])
 
-    
+
     return <table className="w-full">
         <tbody>
-            {props.series.map((series) => (
+            {props.feed.publications && props.feed.publications.map((publication) => (
                 <SeriesRow
-                    user={me}
-                    key={series.id}
-                    series={series}
-                    onClick={() => selectSeries(series)}
+                    favorites={favorites}
+                    key={publication.id}
+                    publication={publication}
+                    onClick={() => selectSeries(publication)}
                     onDelete={() => {
-                        props.onSeriesChange(
-                            props.series.filter((s) => s.id !== series.id)
+                        props.onFeedChange(
+                            new Feed(
+                                {
+                                    ...props.feed,
+                                    publications: props.feed.publications?.filter((s) => s.id !== publication.id)
+                                }
+                            )
                         );
 
                     }}

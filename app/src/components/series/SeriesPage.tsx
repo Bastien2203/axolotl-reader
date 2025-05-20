@@ -1,15 +1,14 @@
-import { Publication, Series } from "../../types";
 import { useEffect, useState } from "react";
-import { getSeries, PAGE_SIZE } from "../../services/Book";
 import Spinner from "../common/Spinner";
 import Pagination from "../common/Pagination";
 import PageLayout from "../../layout/PageLayout";
 import BookTable from "../books/BookTable";
 import { useLocation } from "react-router-dom";
+import { navigationDocument, Publication } from "../../services/OPDS";
 
 
 type SeriesPageProps = {
-    series: Series;
+    publication: Publication;
     onBack?: () => void;
 }
 
@@ -22,8 +21,11 @@ const SeriesPage = (props: SeriesPageProps) => {
     const location = useLocation();
 
     useEffect(() => {
-        getSeries(props.series, page).then((data) => {
-            setTotalPages(Math.ceil(data.metadata.total / PAGE_SIZE));
+        navigationDocument({
+            url : props.publication.subsection?.href,
+            page
+        }).then((data) => {
+            setTotalPages(Number(data.last?.href.split("page=")[1]) || 0);
             setBooks(data.publications || []);
         }
         ).catch((error) => {
@@ -37,7 +39,7 @@ const SeriesPage = (props: SeriesPageProps) => {
         }
     }, [location]);
 
-    return <PageLayout title={props.series.name} onBack={props.onBack}>
+    return <PageLayout title={props.publication.metadata.title} onBack={props.onBack}>
         {books ? <>
             <BookTable books={books} onBooksChange={setBooks} />
             <Pagination

@@ -9,10 +9,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Bastien2203/comics-reader/cover_queue"
-	"github.com/Bastien2203/comics-reader/log"
+	"github.com/Bastien2203/comics-reader/jobs"
+	"github.com/Bastien2203/comics-reader/logs"
 	"github.com/Bastien2203/comics-reader/models"
+	"github.com/Bastien2203/comics-reader/repositories"
 	"github.com/gin-gonic/gin"
+
+	"go.uber.org/zap"
+
 	"gorm.io/gorm"
 )
 
@@ -49,14 +53,13 @@ func Upload(db *gorm.DB, c *gin.Context) {
 		var err error
 		coverFile, err = c.FormFile("cover")
 		if err != nil {
-			log.Error(err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "cover file required"})
 			return
 		}
 	}
 	bookFile, err := c.FormFile("book")
 	if err != nil {
-		log.Error(err)
+
 		c.JSON(http.StatusBadRequest, gin.H{"error": "book file required"})
 		return
 	}
@@ -67,7 +70,7 @@ func Upload(db *gorm.DB, c *gin.Context) {
 		extension := filepath.Ext(coverFile.Filename)
 		coverPath = filepath.Join(os.Getenv("COVER_DIRECTORY"), identifier+extension)
 		if err := c.SaveUploadedFile(coverFile, coverPath); err != nil {
-			log.Error(err)
+			logs.Logger.Error("failed to save cover", zap.Error(err))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save cover"})
 			return
 		}
@@ -76,7 +79,7 @@ func Upload(db *gorm.DB, c *gin.Context) {
 
 	bookPath := filepath.Join(os.Getenv("BOOK_DIRECTORY"), identifier+".cbz")
 	if err := c.SaveUploadedFile(bookFile, bookPath); err != nil {
-		log.Error(err)
+		logs.Logger.Error("failed to save book", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to save book"})
 		return
 	}
@@ -84,11 +87,12 @@ func Upload(db *gorm.DB, c *gin.Context) {
 
 	if useFirstPageAsCover == "true" {
 		coverPath = filepath.Join(os.Getenv("COVER_DIRECTORY"), identifier+".png")
-		cover_queue.Queue <- cover_queue.CoverJob{
+		jobs.Queue.Submit(&jobs.GenerateCoverJob{
 			Identifier: identifier,
 			BookPath:   bookPath,
 			OutputPath: coverPath,
-		}
+		})
+
 		coverUrl = "/covers/" + identifier + ".png"
 	}
 
@@ -96,7 +100,7 @@ func Upload(db *gorm.DB, c *gin.Context) {
 	for i, tag := range tags {
 		tagsList[i] = models.Tag{Name: tag}
 		if err := db.Where(models.Tag{Name: tag}).FirstOrCreate(&tagsList[i]).Error; err != nil {
-			log.Error(err)
+			logs.Logger.Error("db insert failed", zap.Error(err))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "db insert failed"})
 			return
 		}
@@ -107,7 +111,7 @@ func Upload(db *gorm.DB, c *gin.Context) {
 	for i, author := range authors {
 		authorsList[i] = models.Author{Name: author}
 		if err := db.Where(models.Author{Name: author}).FirstOrCreate(&authorsList[i]).Error; err != nil {
-			log.Error(err)
+			logs.Logger.Error("db insert failed", zap.Error(err))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "db insert failed"})
 			return
 		}
@@ -115,9 +119,9 @@ func Upload(db *gorm.DB, c *gin.Context) {
 
 	series := models.Series{}
 	if seriesName != "" {
-		series = models.Series{Name: seriesName, Tags: tagsList}
+		series = models.Series{Name: seriesName, Tags: tagsList, CoverURL: coverUrl}
 		if err := db.Where(models.Series{Name: seriesName}).FirstOrCreate(&series).Error; err != nil {
-			log.Error(err)
+			logs.Logger.Error("db insert failed", zap.Error(err))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "db insert failed"})
 			return
 		}
@@ -139,6 +143,10 @@ func Upload(db *gorm.DB, c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db insert failed"})
 		return
 	}
+
+	jobs.Queue.Submit(&jobs.GenerateOPDSFeedJob{
+		Repository: repositories.Repository{DB: db},
+	})
 
 	c.JSON(http.StatusCreated, gin.H{"status": "created", "id": comic.ID})
 }

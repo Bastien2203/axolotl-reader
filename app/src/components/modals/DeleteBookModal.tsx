@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { useToast } from "../../contexts/ToastContext";
 import Modal from "../common/Modal";
 import Spinner from "../common/Spinner";
-import { Publication } from "../../types";
-import { deleteBook, deleteDownloadedBook } from "../../services/Book";
+import { deleteBook } from "../../services/Book";
+import { Publication } from "../../services/OPDS";
 
 
 type DeleteBookModalProps = {
-    books: Publication[];
+    publications: Publication[];
     setBooks: (books: Publication[]) => void;
     deleteModalOpen: string | null;
     setDeleteModalOpen: (bookId: string | null) => void;
@@ -25,7 +25,7 @@ const DeleteBookModal = (props: DeleteBookModalProps) => {
                 message: "Book deleted successfully",
                 type: "alert-success",
             });
-            props.setBooks(props.books.filter((book) => book.metadata.identifier !== bookId));
+            props.setBooks(props.publications.filter((book) => book.id !== bookId));
         }
 
         const onError = (message: string) => {
@@ -38,7 +38,7 @@ const DeleteBookModal = (props: DeleteBookModalProps) => {
             setLoading(false);
             props.setDeleteModalOpen(null);
         }
-        const book = props.books.find((book) => book.metadata.identifier === bookId);
+        const book = props.publications.find((p) => p.id === bookId);
         if (!book) {
             showToast({
                 message: "Book not found",
@@ -46,36 +46,9 @@ const DeleteBookModal = (props: DeleteBookModalProps) => {
             });
             return;
         }
-        const acquisitionLink = book.links.find((link) => link.rel === "acquisition");
-        if (!acquisitionLink) {
-            showToast({
-                message: "Book not found",
-                type: "alert-error",
-            });
-            return;
-        }
-        const blobLink = acquisitionLink.type.startsWith("blob+");
+        
         setLoading(true);
-
-        if (blobLink) {
-            deleteDownloadedBook(bookId).then(() => {
-                showToast({
-                    message: "Book deleted successfully",
-                    type: "alert-success",
-                });
-                props.setBooks(props.books.filter((book) => book.metadata.identifier !== bookId));
-            }).catch((err) => {
-                console.error(err);
-                showToast({
-                    message: "Failed to delete book",
-                    type: "alert-error",
-                });
-            });
-        }else {
-            deleteBook(bookId, onSuccess, onError, onFinish);        
-        }
-
-
+        deleteBook(bookId, onSuccess, onError, onFinish);        
     }
 
     useEffect(() => {

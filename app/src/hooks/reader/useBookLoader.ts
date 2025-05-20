@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import JSZip from "jszip";
-import { API_HOST, Publication } from "../../types";
+import { Publication } from "../../services/OPDS";
 
 
 export const useBookLoader = (book: Publication) => {
@@ -9,12 +9,10 @@ export const useBookLoader = (book: Publication) => {
   const [objectUrls, setObjectUrls] = useState<string[]>([]);
 
   useEffect(() => {
-    const link = book.links.find((l) => l.rel === "acquisition");
-    if (!link) throw new Error("No acquisition link found");
+    const link = book.acquisition
+    if (!link || !link.type) throw new Error("No acquisition link found");
 
-    const fetchUrl = link.type.startsWith("blob+")
-      ? URL.createObjectURL(link.href as unknown as Blob)
-      : API_HOST + link.href;
+    const fetchUrl = link.href
 
     let urls: string[] = [];
 

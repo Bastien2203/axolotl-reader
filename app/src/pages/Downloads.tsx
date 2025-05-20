@@ -1,39 +1,19 @@
-import { useEffect, useState } from "react";
-import { Publication } from "../types";
-import { getDownloadedBooks } from "../services/Book";
-import { useToast } from "../contexts/ToastContext";
+import { useEffect } from "react";
 import PageLayout from "../layout/PageLayout";
-import BookTable from "../components/books/BookTable";
 
 
 
 const Downloads = () => {
-    const [downloads, setDownloads] = useState<Publication[]>([]);
-    const { showToast } = useToast();
 
 
     useEffect(() => {
-        getDownloadedBooks().then((books) => {
-            setDownloads(books);
-        }).catch((err) => {
-            console.error(err);
-            showToast({
-                type: "alert-error",
-                message: "Failed to fetch downloaded books",
-            });
-        });
+        
     }, []);
 
     return (
         <PageLayout title="Downloads">
-            {
-                downloads.length > 0 && (
-                    <BookTable
-                        books={downloads}
-                        onBooksChange={setDownloads}
-                    />
-                ) 
-            }
+            
+        
         </PageLayout>
     );
 }

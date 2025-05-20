@@ -27,3 +27,7 @@ docker run -d \
 ## TODO
 
 - [ ] Add delete modal for series
+- [ ] Pagnination for series (and favorites)
+- [ ] Remove facets route (replace by real opds version)
+- [ ] Repare downloads
+- [ ] In upload route, add logic to set series cover to the first book cover

@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, ReactNode } from "react";
-import { Publication } from "../types";
 import Reader from "../components/reader/Reader";
+import { Publication } from "../services/OPDS";
 
 type ReaderProps = {
-      book: Publication;
+      publication: Publication;
       onClose?: () => void;
       onNext?: () => void;
       onPrev?: () => void;
@@ -21,7 +21,7 @@ export const ReaderProvider = ({ children }: { children: ReactNode }) => {
 
   const showReader = (reader: ReaderProps) => {
     const url = new URL(window.location.href);
-    url.searchParams.set("book", reader.book.metadata.identifier);
+    url.searchParams.set("book", reader.publication.id);
     window.history.pushState({}, "", url.toString());
     setReader({...reader, onClose: () => {
       setReader(null)

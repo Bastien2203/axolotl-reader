@@ -5,6 +5,9 @@ comics.db
 api/data
 api/covers
 api/comics.db
-data
 api/dist
+api/feeds
+api/api.log
+
+data
 scrap

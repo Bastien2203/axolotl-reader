@@ -1,34 +1,37 @@
 import { useState, useEffect } from "react";
 import SeriesTable from "../components/series/SeriesTable";
 import PageLayout from "../layout/PageLayout";
-import { getFacets } from "../services/Book";
-import { Series } from "../types";
 import { useToast } from "../contexts/ToastContext";
+import { Feed, navigationDocument } from "../services/OPDS";
 
 const Library = () => {
-    const [series, setSeries] = useState<Series[]>([]);
-    const { showToast } = useToast();
+  const [feed, setFeed] = useState<Feed>();
 
-    useEffect(() => {
-        getFacets({ series: true }).then((data) => {
-          setSeries(data.facets.series || []);
-        }).catch((error) => {
-          console.error("Error fetching series:", error);
-          showToast({
-            type: "alert-error",
-            message: "Error fetching series",
-          });
-        })
-      }, []);
-    return <PageLayout title="Library">
-        <h2 className="text-xl font-semibold">Series</h2>
-        <SeriesTable
-            series={series}
-            onSeriesChange={setSeries}
-        />
+  const { showToast } = useToast();
 
-    
-    </PageLayout>
+  useEffect(() => {
+    navigationDocument().then((data) => {
+      setFeed(data);
+    }).catch((error) => {
+      console.error("Error fetching feed:", error);
+      showToast({
+        type: "alert-error",
+        message: "Error fetching feed",
+      });
+    })
+  }, []);
+  return <PageLayout title="Library">
+    <h2 className="text-xl font-semibold">Series</h2>
+    {
+      feed && <SeriesTable
+        feed={feed}
+        onFeedChange={setFeed}
+      />
+    }
+
+
+
+  </PageLayout>
 }
 
 export default Library;

@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, ReactNode } from "react";
-import { Series } from "../types";
 import SeriesPage from "../components/series/SeriesPage";
+import { Publication } from "../services/OPDS";
 
 type SeriesPageProps = {
-  series: Series;
+  publication: Publication;
   onBack: () => void;
 };
 

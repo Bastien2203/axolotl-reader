@@ -1,19 +1,25 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
+	"time"
 
-	"github.com/Bastien2203/comics-reader/cover_queue"
+	"github.com/Bastien2203/comics-reader/jobs"
+	"github.com/Bastien2203/comics-reader/logs"
 	"github.com/Bastien2203/comics-reader/middleware"
 	"github.com/Bastien2203/comics-reader/models"
+	opds_v2 "github.com/Bastien2203/comics-reader/opds/v2"
+	"github.com/Bastien2203/comics-reader/repositories"
 	"github.com/Bastien2203/comics-reader/routes/books"
-	"github.com/Bastien2203/comics-reader/routes/opds"
+	jobs_routes "github.com/Bastien2203/comics-reader/routes/jobs"
+	opds "github.com/Bastien2203/comics-reader/routes/opds_v2"
 	"github.com/Bastien2203/comics-reader/routes/series"
 	"github.com/Bastien2203/comics-reader/routes/users"
 	"github.com/gin-contrib/cors"
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"gorm.io/driver/sqlite"
@@ -21,10 +27,11 @@ import (
 )
 
 func main() {
-	cover_queue.StartWorker()
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
+	if os.Getenv("ENV") != "production" {
+		err := godotenv.Load()
+		if err != nil {
+			panic("No .env file found, skipping...")
+		}
 	}
 
 	coverDir := os.Getenv("COVER_DIRECTORY")
@@ -35,6 +42,10 @@ func main() {
 	if bookDir == "" {
 		panic("BOOK_DIRECTORY environment variable not set")
 	}
+	api_host := os.Getenv("API_HOST")
+	if api_host == "" {
+		panic("API_HOST environment variable not set")
+	}
 
 	db, err := gorm.Open(sqlite.Open(os.Getenv("DATABASE_PATH")), &gorm.Config{})
 	if err != nil {
@@ -42,7 +53,21 @@ func main() {
 	}
 	db.AutoMigrate(&models.Comic{}, &models.Tag{}, &models.Author{}, &models.Series{}, &models.User{})
 
+	ctx := context.Background()
+	jobs.Queue.StartWorker(1, ctx)
+
+	repository := repositories.Repository{DB: db}
+	jobs.Queue.Submit(&jobs.GenerateOPDSFeedJob{
+		Repository: repository,
+	})
+
+	// Route setup
 	r := gin.Default()
+
+	logs.Init()
+	r.Use(ginzap.Ginzap(logs.Logger, time.RFC3339, true))
+	r.Use(ginzap.RecoveryWithZap(logs.Logger, true))
+
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
 		AllowMethods:     []string{"GET", "POST", "DELETE"},
@@ -60,12 +85,20 @@ func main() {
 		c.File(bookDir + filepath)
 	})
 
+	jobsGroup := r.Group("/jobs", middleware.AuthRequired)
+	{
+		jobsGroup.GET("", func(c *gin.Context) { jobs_routes.GetAll(c) })
+	}
+
+	opdsV2Group := r.Group("/opds/v2")
+	{
+		opdsV2Group.GET("", func(c *gin.Context) { opds_v2.Catalog(repository, c) })
+		opdsV2Group.GET("/series/:id", func(c *gin.Context) { opds_v2.Series(repository, c) })
+	}
+
 	opdsGroup := r.Group("/opds", middleware.AuthRequired)
 	{
-		opdsGroup.GET("/catalog.json", func(c *gin.Context) { opds.Catalog(db, c) })
 		opdsGroup.GET("/facets.json", func(c *gin.Context) { opds.Facets(db, c) })
-		opdsGroup.GET("/search.json", func(c *gin.Context) { opds.Search(db, c) })
-		opdsGroup.GET("/series/:id", func(c *gin.Context) { opds.GetSeries(db, c) })
 	}
 
 	booksGroup := r.Group("/books", middleware.AuthRequired)
@@ -81,12 +114,14 @@ func main() {
 
 	usersGroup := r.Group("/users")
 	{
-		usersGroup.POST("/add_favorite_series/:id", middleware.AuthRequired, func(c *gin.Context) { users.AddFavoriteSeries(db, c) })
-		usersGroup.DELETE("/remove_favorite_series/:id", middleware.AuthRequired, func(c *gin.Context) { users.RemoveFavoriteSeries(db, c) })
+		usersGroup.GET("", middleware.AuthRequired, func(c *gin.Context) { users.GetAll(db, c) })
 		usersGroup.POST("/login", func(c *gin.Context) { users.Login(db, c) })
 		usersGroup.POST("/register", func(c *gin.Context) { users.Register(db, c) })
 		usersGroup.GET("/can_register", func(c *gin.Context) { users.CanRegister(db, c) })
 		usersGroup.GET("/me", middleware.AuthRequired, func(c *gin.Context) { users.Me(db, c) })
+		usersGroup.GET("/favorites", middleware.AuthRequired, func(c *gin.Context) { users.GetFavoriteSeries(db, c) })
+		usersGroup.POST("/favorites/:id", middleware.AuthRequired, func(c *gin.Context) { users.AddFavoriteSeries(db, c) })
+		usersGroup.DELETE("/favorites/:id", middleware.AuthRequired, func(c *gin.Context) { users.RemoveFavoriteSeries(db, c) })
 	}
 
 	r.LoadHTMLFiles("./dist/index.html")

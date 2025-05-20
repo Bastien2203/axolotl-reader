@@ -15,19 +15,3 @@ type Comic struct {
 	SeriesID       uint
 	SeriesPosition int `gorm:"null"`
 }
-
-type Author struct {
-	ID   uint   `gorm:"primaryKey"`
-	Name string `gorm:"unique;not null"`
-}
-
-type Tag struct {
-	ID   uint   `gorm:"primaryKey"`
-	Name string `gorm:"unique;not null"`
-}
-
-type Series struct {
-	ID   uint   `gorm:"primaryKey"`
-	Tags []Tag  `gorm:"many2many:series_tags"`
-	Name string `gorm:"unique;not null"`
-}

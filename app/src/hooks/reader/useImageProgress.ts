@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { Publication } from "../../types";
 import { getBookProgress, setBookProgress } from "../../services/Book";
+import { Publication } from "../../services/OPDS";
 
 export const useImageProgress = (
   images: string[],
@@ -18,12 +18,12 @@ export const useImageProgress = (
       const progress = maxScroll > 0 ? (scrollTop / maxScroll) * 100 : 0;
 
       setProgress(progress);
-      setBookProgress(book.metadata.identifier, progress);
+      setBookProgress(book.id, progress);
     };
 
 
     const adjustScrollToProgress = () => {
-      const savedProgress = getBookProgress(book.metadata.identifier)?.progress; 
+      const savedProgress = getBookProgress(book.id)?.progress; 
       if (savedProgress && el) {
         const maxScroll = el.scrollHeight - el.clientHeight;
         const targetScrollTop = (savedProgress / 100) * maxScroll;
