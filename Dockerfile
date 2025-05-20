@@ -18,20 +18,26 @@ RUN npm run build
 ########################################################################
 # 2) Build Backend (Go)                                                #
 ########################################################################
-FROM --platform=$BUILDPLATFORM golang:1.23-alpine AS go-builder
+FROM --platform=linux/arm/v7 golang:1.23-alpine AS go-builder
 
-RUN apk add --no-cache gcc musl-dev sqlite-dev
+RUN apk add --no-cache \
+    gcc \
+    musl-dev \
+    sqlite-dev \
+    linux-headers \
+    libc6-compat
 
 WORKDIR /app
+
 COPY api/go.mod api/go.sum ./
 RUN go mod download
 
 COPY api/ .
 
-ENV GOOS=linux \
+ENV CGO_ENABLED=1 \
+    GOOS=linux \
     GOARCH=arm \
-    GOARM=7 \
-    CGO_ENABLED=1   
+    GOARM=7
 
 RUN go build -o api ./main.go
 
