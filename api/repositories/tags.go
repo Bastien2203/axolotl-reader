@@ -1,8 +1,15 @@
 package repositories
 
-import "github.com/Bastien2203/comics-reader/models"
+import (
+	"github.com/Bastien2203/comics-reader/models"
+	"gorm.io/gorm"
+)
 
-func (r *Repository) FindAllTags() ([]models.Tag, error) {
+type TagRepository struct {
+	DB *gorm.DB
+}
+
+func (r *TagRepository) FindAll() ([]models.Tag, error) {
 	var tags []models.Tag
 	if err := r.DB.
 		Order("name ASC").
@@ -10,4 +17,14 @@ func (r *Repository) FindAllTags() ([]models.Tag, error) {
 		return nil, err
 	}
 	return tags, nil
+}
+
+func (r *TagRepository) FindByNameOrCreate(tag *models.Tag) (*models.Tag, error) {
+	if err := r.DB.
+		Where("name = ?", tag.Name).
+		FirstOrCreate(&tag).
+		Error; err != nil {
+		return nil, err
+	}
+	return tag, nil
 }

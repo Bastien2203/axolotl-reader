@@ -115,7 +115,7 @@ func BuildGlobalFeed(
 	}
 }
 
-func BuildSeriesFeed(series models.Series, page, totalPage int, root string) Feed {
+func BuildSeriesFeed(series *models.Series, page, totalPage int, root string) Feed {
 	API_HOST := os.Getenv("API_HOST")
 
 	links := make([]Link, 0)

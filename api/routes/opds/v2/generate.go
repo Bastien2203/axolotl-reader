@@ -8,12 +8,19 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Bastien2203/comics-reader/logs"
 	"github.com/Bastien2203/comics-reader/models"
 	"github.com/Bastien2203/comics-reader/repositories"
+	"go.uber.org/zap"
 )
 
-func GenerateGlobalFeed(repository repositories.Repository) error {
-	totalSeries, err := repository.CountSeries()
+func GenerateGlobalFeed(
+	seriesRepository *repositories.SeriesRepository,
+	tagRepository *repositories.TagRepository,
+	comicRepository *repositories.ComicRepository,
+) error {
+
+	totalSeries, err := seriesRepository.Count()
 	if err != nil {
 		return err
 	}
@@ -30,13 +37,13 @@ func GenerateGlobalFeed(repository repositories.Repository) error {
 		return nil
 	}
 
-	for page := 1; page <= totalPages; page++ {
-		series, err := repository.FindAllSeries(page)
-		if err != nil {
-			return err
-		}
+	tags, err := tagRepository.FindAll()
+	if err != nil {
+		return err
+	}
 
-		tags, err := repository.FindAllTags()
+	for page := 1; page <= totalPages; page++ {
+		series, err := seriesRepository.FindAll(page)
 		if err != nil {
 			return err
 		}
@@ -50,7 +57,7 @@ func GenerateGlobalFeed(repository repositories.Repository) error {
 
 		for _, s := range series {
 			existingSeries[fmt.Sprintf("%d", s.ID)] = struct{}{}
-			err = GenerateSeriesFeed(repository, fmt.Sprintf("%d", s.ID), "/opds/v2")
+			err = GenerateSeriesFeed(seriesRepository, comicRepository, fmt.Sprintf("%d", s.ID), "/opds/v2")
 			if err != nil {
 				return err
 			}
@@ -58,13 +65,9 @@ func GenerateGlobalFeed(repository repositories.Repository) error {
 	}
 
 	// Generate the global feed for each tag
-	tags, err := repository.FindAllTags()
 	existingTags := make(map[string]struct{}, len(tags))
-	if err != nil {
-		return err
-	}
 	for _, tag := range tags {
-		err = GenerateGlobalFeedByTag(repository, &tag)
+		err = GenerateGlobalFeedByTag(seriesRepository, &tag, tags)
 		existingTags[fmt.Sprintf("%d", tag.ID)] = struct{}{}
 		if err != nil {
 			return err
@@ -104,9 +107,13 @@ func GenerateGlobalFeed(repository repositories.Repository) error {
 	return nil
 }
 
-func GenerateGlobalFeedByTag(repository repositories.Repository, tag *models.Tag) error {
+func GenerateGlobalFeedByTag(
+	seriesRepository *repositories.SeriesRepository,
+	tag *models.Tag,
+	allTags []models.Tag,
+) error {
 	tagID := fmt.Sprintf("%d", tag.ID)
-	totalSeries, err := repository.CountSeriesByTagID(tagID)
+	totalSeries, err := seriesRepository.CountByTag(tagID)
 	if err != nil {
 		return err
 	}
@@ -124,17 +131,12 @@ func GenerateGlobalFeedByTag(repository repositories.Repository, tag *models.Tag
 	}
 
 	for page := 1; page <= totalPages; page++ {
-		series, err := repository.FindAllSeriesByTagID(tagID, page)
+		series, err := seriesRepository.FindByTag(tagID, page)
 		if err != nil {
 			return err
 		}
 
-		tags, err := repository.FindAllTags()
-		if err != nil {
-			return err
-		}
-
-		feed := BuildGlobalFeed(series, tags, page, totalPages, "/opds/v2", tag)
+		feed := BuildGlobalFeed(series, allTags, page, totalPages, "/opds/v2", tag)
 		subdir := fmt.Sprintf("tag_%s", tagID)
 		err = WriteFeedToFile(feed, page, &subdir)
 		if err != nil {
@@ -171,8 +173,14 @@ func GenerateGlobalFeedByTag(repository repositories.Repository, tag *models.Tag
 	return nil
 }
 
-func GenerateSeriesFeed(repository repositories.Repository, seriesID string, root string) error {
-	totalComics, err := repository.CountComicsBySeriesID(seriesID)
+func GenerateSeriesFeed(
+	seriesRepository *repositories.SeriesRepository,
+	comicRepository *repositories.ComicRepository,
+	seriesID string,
+	root string,
+) error {
+
+	totalComics, err := comicRepository.CountBySeries(seriesID)
 	if err != nil {
 		return err
 	}
@@ -180,10 +188,13 @@ func GenerateSeriesFeed(repository repositories.Repository, seriesID string, roo
 	totalPages := (int(totalComics) + repositories.PAGE_SIZE - 1) / repositories.PAGE_SIZE
 
 	for page := 1; page <= totalPages; page++ {
-		series, err := repository.FindSeriesByID(seriesID, page)
+
+		series, err := seriesRepository.FindOneByIDWithComics(seriesID, page)
 		if err != nil {
+			logs.Logger.Error("failed to find series", zap.String("seriesID", seriesID), zap.Error(err))
 			return err
 		}
+
 		feed := BuildSeriesFeed(series, page, totalPages, root)
 		subdir := fmt.Sprintf("series_%s", seriesID)
 		err = WriteFeedToFile(feed, page, &subdir)

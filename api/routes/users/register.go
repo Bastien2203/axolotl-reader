@@ -1,4 +1,4 @@
-package users
+package users_routes
 
 import (
 	"net/http"
@@ -6,6 +6,7 @@ import (
 	"github.com/Bastien2203/comics-reader/logs"
 	"github.com/Bastien2203/comics-reader/middleware"
 	"github.com/Bastien2203/comics-reader/models"
+	"github.com/Bastien2203/comics-reader/repositories"
 	"github.com/Bastien2203/comics-reader/utils"
 	"github.com/gin-gonic/gin"
 
@@ -13,9 +14,12 @@ import (
 	"gorm.io/gorm"
 )
 
-func CanRegister(db *gorm.DB, c *gin.Context) {
-	var count int64
-	if err := db.Model(&models.User{}).Count(&count).Error; err != nil {
+func CanRegister(
+	userRepository *repositories.UserRepository,
+	c *gin.Context,
+) {
+	count, err := userRepository.Count()
+	if err != nil {
 		logs.Logger.Error("failed to count users", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to check user count"})
 		return
@@ -29,10 +33,12 @@ func CanRegister(db *gorm.DB, c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"can_register": true})
 }
 
-func Register(db *gorm.DB, c *gin.Context) {
-
-	var count int64
-	if err := db.Model(&models.User{}).Count(&count).Error; err != nil {
+func Register(
+	userRepository *repositories.UserRepository,
+	c *gin.Context,
+) {
+	count, err := userRepository.Count()
+	if err != nil {
 		logs.Logger.Error("failed to count users", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unable to check user count"})
 		return
@@ -63,7 +69,7 @@ func Register(db *gorm.DB, c *gin.Context) {
 		user.Role = "user"
 	}
 
-	if err := db.Create(&user).Error; err != nil {
+	if err := userRepository.Create(&user); err != nil {
 		if err == gorm.ErrDuplicatedKey {
 			c.JSON(http.StatusConflict, gin.H{"error": "Username already exists"})
 			return

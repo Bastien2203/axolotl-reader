@@ -1,4 +1,4 @@
-package books
+package books_routes
 
 import (
 	"net/http"
@@ -13,30 +13,42 @@ import (
 	"gorm.io/gorm"
 )
 
-func Delete(db *gorm.DB, c *gin.Context) {
+func Delete(
+	comicRepository *repositories.ComicRepository,
+	seriesRepository *repositories.SeriesRepository,
+	tagRepository *repositories.TagRepository,
+	c *gin.Context,
+) {
 	id := c.Param("id")
 
 	// Check if the comic exists
-	var comic models.Comic
-	if err := db.Where("identifier = ?", id).First(&comic).Error; err != nil {
+	comic, err := comicRepository.FindOneByIdentifier(id)
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "comic not found"})
 			return
 		}
+		logs.Logger.Error("failed to find comic", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
 		return
 	}
 
-	DeleteComic(comic, db, c)
+	DeleteComic(comic, comicRepository, c)
 
 	jobs.Queue.Submit(&jobs.GenerateOPDSFeedJob{
-		Repository: repositories.Repository{DB: db},
+		SeriesRepository: seriesRepository,
+		ComicRepository:  comicRepository,
+		TagRepository:    tagRepository,
 	})
 
 	c.Status(http.StatusNoContent)
 }
 
-func DeleteComic(comic models.Comic, db *gorm.DB, c *gin.Context) {
+func DeleteComic(
+	comic *models.Comic,
+	comicRepository *repositories.ComicRepository,
+	c *gin.Context,
+) {
 	file := comic.FilePath
 	if err := os.Remove(file); err != nil {
 		logs.Logger.Error("file deletion failed", zap.Error(err))
@@ -51,9 +63,9 @@ func DeleteComic(comic models.Comic, db *gorm.DB, c *gin.Context) {
 		return
 	}
 
-	if err := db.Where("identifier = ?", comic.Identifier).Delete(&models.Comic{}).Error; err != nil {
-		logs.Logger.Error("delete failed", zap.Error(err))
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "delete failed"})
+	if err := comicRepository.DeleteByIdentifier(comic.Identifier); err != nil {
+		logs.Logger.Error("comic deletion failed", zap.Error(err))
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "comic deletion failed"})
 		return
 	}
 }

@@ -1,7 +1,6 @@
-package books
+package books_routes
 
 import (
-	"fmt"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -16,11 +15,15 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"go.uber.org/zap"
-
-	"gorm.io/gorm"
 )
 
-func Upload(db *gorm.DB, c *gin.Context) {
+func Upload(
+	comicRepository *repositories.ComicRepository,
+	tagRepository *repositories.TagRepository,
+	authorRepository *repositories.AuthorRepository,
+	seriesRepository *repositories.SeriesRepository,
+	c *gin.Context,
+) {
 	// Retrive metadata
 	title := c.PostForm("title")
 	authors := strings.Split(c.PostForm("authors"), ",")
@@ -99,18 +102,17 @@ func Upload(db *gorm.DB, c *gin.Context) {
 	tagsList := make([]models.Tag, len(tags))
 	for i, tag := range tags {
 		tagsList[i] = models.Tag{Name: tag}
-		if err := db.Where(models.Tag{Name: tag}).FirstOrCreate(&tagsList[i]).Error; err != nil {
+		if _, err := tagRepository.FindByNameOrCreate(&tagsList[i]); err != nil {
 			logs.Logger.Error("db insert failed", zap.Error(err))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "db insert failed"})
 			return
 		}
 	}
 
-	fmt.Println(authors)
 	authorsList := make([]models.Author, len(authors))
 	for i, author := range authors {
 		authorsList[i] = models.Author{Name: author}
-		if err := db.Where(models.Author{Name: author}).FirstOrCreate(&authorsList[i]).Error; err != nil {
+		if _, err := authorRepository.FindByNameOrCreate(&authorsList[i]); err != nil {
 			logs.Logger.Error("db insert failed", zap.Error(err))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "db insert failed"})
 			return
@@ -120,7 +122,7 @@ func Upload(db *gorm.DB, c *gin.Context) {
 	series := models.Series{}
 	if seriesName != "" {
 		series = models.Series{Name: seriesName, Tags: tagsList, CoverURL: coverUrl}
-		if err := db.Where(models.Series{Name: seriesName}).FirstOrCreate(&series).Error; err != nil {
+		if _, err := seriesRepository.FindByNameOrCreate(&series); err != nil {
 			logs.Logger.Error("db insert failed", zap.Error(err))
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "db insert failed"})
 			return
@@ -139,13 +141,16 @@ func Upload(db *gorm.DB, c *gin.Context) {
 		SeriesPosition: seriesPosition,
 	}
 
-	if err := db.Create(&comic).Error; err != nil {
+	if err := comicRepository.Create(&comic); err != nil {
+		logs.Logger.Error("db insert failed", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db insert failed"})
 		return
 	}
 
 	jobs.Queue.Submit(&jobs.GenerateOPDSFeedJob{
-		Repository: repositories.Repository{DB: db},
+		SeriesRepository: seriesRepository,
+		ComicRepository:  comicRepository,
+		TagRepository:    tagRepository,
 	})
 
 	c.JSON(http.StatusCreated, gin.H{"status": "created", "id": comic.ID})

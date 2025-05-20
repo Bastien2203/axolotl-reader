@@ -11,13 +11,16 @@ import (
 	"github.com/Bastien2203/comics-reader/logs"
 	"github.com/Bastien2203/comics-reader/middleware"
 	"github.com/Bastien2203/comics-reader/models"
-	opds_v2 "github.com/Bastien2203/comics-reader/opds/v2"
+
 	"github.com/Bastien2203/comics-reader/repositories"
-	"github.com/Bastien2203/comics-reader/routes/books"
+
+	books_routes "github.com/Bastien2203/comics-reader/routes/books"
 	jobs_routes "github.com/Bastien2203/comics-reader/routes/jobs"
+	opds_v2 "github.com/Bastien2203/comics-reader/routes/opds/v2"
 	opds "github.com/Bastien2203/comics-reader/routes/opds_v2"
-	"github.com/Bastien2203/comics-reader/routes/series"
-	"github.com/Bastien2203/comics-reader/routes/users"
+	series_routes "github.com/Bastien2203/comics-reader/routes/series"
+	users_routes "github.com/Bastien2203/comics-reader/routes/users"
+
 	"github.com/gin-contrib/cors"
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
@@ -56,10 +59,11 @@ func main() {
 	ctx := context.Background()
 	jobs.Queue.StartWorker(1, ctx)
 
-	repository := repositories.Repository{DB: db}
-	jobs.Queue.Submit(&jobs.GenerateOPDSFeedJob{
-		Repository: repository,
-	})
+	tagRepository := &repositories.TagRepository{DB: db}
+	authorRepository := &repositories.AuthorRepository{DB: db}
+	seriesRepository := &repositories.SeriesRepository{DB: db}
+	comicRepository := &repositories.ComicRepository{DB: db}
+	userRepository := &repositories.UserRepository{DB: db}
 
 	// Route setup
 	r := gin.Default()
@@ -67,6 +71,12 @@ func main() {
 	logs.Init()
 	r.Use(ginzap.Ginzap(logs.Logger, time.RFC3339, true))
 	r.Use(ginzap.RecoveryWithZap(logs.Logger, true))
+
+	jobs.Queue.Submit(&jobs.GenerateOPDSFeedJob{
+		SeriesRepository: seriesRepository,
+		TagRepository:    tagRepository,
+		ComicRepository:  comicRepository,
+	})
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
@@ -92,8 +102,8 @@ func main() {
 
 	opdsV2Group := r.Group("/opds/v2")
 	{
-		opdsV2Group.GET("", func(c *gin.Context) { opds_v2.Catalog(repository, c) })
-		opdsV2Group.GET("/series/:id", func(c *gin.Context) { opds_v2.Series(repository, c) })
+		opdsV2Group.GET("", opds_v2.Catalog)
+		opdsV2Group.GET("/series/:id", opds_v2.Series)
 	}
 
 	opdsGroup := r.Group("/opds", middleware.AuthRequired)
@@ -103,25 +113,27 @@ func main() {
 
 	booksGroup := r.Group("/books", middleware.AuthRequired)
 	{
-		booksGroup.POST("", func(c *gin.Context) { books.Upload(db, c) })
-		booksGroup.DELETE("/:id", func(c *gin.Context) { books.Delete(db, c) })
+		booksGroup.POST("", func(c *gin.Context) {
+			books_routes.Upload(comicRepository, tagRepository, authorRepository, seriesRepository, c)
+		})
+		booksGroup.DELETE("/:id", func(c *gin.Context) { books_routes.Delete(comicRepository, seriesRepository, tagRepository, c) })
 	}
 
 	seriesGroup := r.Group("/series", middleware.AuthRequired)
 	{
-		seriesGroup.DELETE("/:id", func(c *gin.Context) { series.Delete(db, c) })
+		seriesGroup.DELETE("/:id", func(c *gin.Context) { series_routes.Delete(comicRepository, seriesRepository, tagRepository, c) })
 	}
 
 	usersGroup := r.Group("/users")
 	{
-		usersGroup.GET("", middleware.AuthRequired, func(c *gin.Context) { users.GetAll(db, c) })
-		usersGroup.POST("/login", func(c *gin.Context) { users.Login(db, c) })
-		usersGroup.POST("/register", func(c *gin.Context) { users.Register(db, c) })
-		usersGroup.GET("/can_register", func(c *gin.Context) { users.CanRegister(db, c) })
-		usersGroup.GET("/me", middleware.AuthRequired, func(c *gin.Context) { users.Me(db, c) })
-		usersGroup.GET("/favorites", middleware.AuthRequired, func(c *gin.Context) { users.GetFavoriteSeries(db, c) })
-		usersGroup.POST("/favorites/:id", middleware.AuthRequired, func(c *gin.Context) { users.AddFavoriteSeries(db, c) })
-		usersGroup.DELETE("/favorites/:id", middleware.AuthRequired, func(c *gin.Context) { users.RemoveFavoriteSeries(db, c) })
+		usersGroup.GET("", middleware.AuthRequired, func(c *gin.Context) { users_routes.GetAll(userRepository, c) })
+		usersGroup.POST("/login", func(c *gin.Context) { users_routes.Login(userRepository, c) })
+		usersGroup.POST("/register", func(c *gin.Context) { users_routes.Register(userRepository, c) })
+		usersGroup.GET("/can_register", func(c *gin.Context) { users_routes.CanRegister(userRepository, c) })
+		usersGroup.GET("/me", middleware.AuthRequired, func(c *gin.Context) { users_routes.Me(userRepository, c) })
+		usersGroup.GET("/favorites", middleware.AuthRequired, func(c *gin.Context) { users_routes.GetFavoriteSeries(userRepository, tagRepository, c) })
+		usersGroup.POST("/favorites/:id", middleware.AuthRequired, func(c *gin.Context) { users_routes.AddFavoriteSeries(userRepository, seriesRepository, c) })
+		usersGroup.DELETE("/favorites/:id", middleware.AuthRequired, func(c *gin.Context) { users_routes.RemoveFavoriteSeries(userRepository, seriesRepository, c) })
 	}
 
 	r.LoadHTMLFiles("./dist/index.html")

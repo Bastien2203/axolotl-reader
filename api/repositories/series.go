@@ -5,11 +5,11 @@ import (
 	"gorm.io/gorm"
 )
 
-var (
-	PAGE_SIZE = 10
-)
+type SeriesRepository struct {
+	DB *gorm.DB
+}
 
-func (r *Repository) FindAllSeries(page int) ([]models.Series, error) {
+func (r *SeriesRepository) FindAll(page int) ([]models.Series, error) {
 	var series []models.Series
 	if err := r.DB.
 		Preload("Tags").
@@ -22,7 +22,7 @@ func (r *Repository) FindAllSeries(page int) ([]models.Series, error) {
 	return series, nil
 }
 
-func (r *Repository) CountSeries() (int64, error) {
+func (r *SeriesRepository) Count() (int64, error) {
 	var count int64
 	if err := r.DB.Model(&models.Series{}).Count(&count).Error; err != nil {
 		return 0, err
@@ -30,17 +30,44 @@ func (r *Repository) CountSeries() (int64, error) {
 	return count, nil
 }
 
-func (r *Repository) CountComicsBySeriesID(seriesID string) (int64, error) {
+func (r *SeriesRepository) FindOneByID(id string) (*models.Series, error) {
+	var series models.Series
+	if err := r.DB.
+		Where("id = ?", id).
+		First(&series).
+		Error; err != nil {
+		return nil, err
+	}
+	return &series, nil
+}
+
+func (r *SeriesRepository) FindByTag(tagID string, page int) ([]models.Series, error) {
+	var series []models.Series
+	if err := r.DB.
+		Preload("Tags").
+		Joins("JOIN series_tags ON series_tags.series_id = series.id").
+		Where("series_tags.tag_id = ?", tagID).
+		Limit(PAGE_SIZE).
+		Offset((page - 1) * PAGE_SIZE).
+		Order("name ASC").
+		Find(&series).Error; err != nil {
+		return nil, err
+	}
+	return series, nil
+}
+
+func (r *SeriesRepository) CountByTag(tagID string) (int64, error) {
 	var count int64
-	if err := r.DB.Model(&models.Comic{}).
-		Where("series_id = ?", seriesID).
+	if err := r.DB.Model(&models.Series{}).
+		Joins("JOIN series_tags ON series_tags.series_id = series.id").
+		Where("series_tags.tag_id = ?", tagID).
 		Count(&count).Error; err != nil {
 		return 0, err
 	}
 	return count, nil
 }
 
-func (r *Repository) FindSeriesByID(id string, page int) (models.Series, error) {
+func (r *SeriesRepository) FindOneByIDWithComics(id string, page int) (*models.Series, error) {
 	var series models.Series
 	if err := r.DB.
 		Preload("Tags").
@@ -54,33 +81,24 @@ func (r *Repository) FindSeriesByID(id string, page int) (models.Series, error) 
 		Where("id = ?", id).
 		First(&series).
 		Error; err != nil {
-		return models.Series{}, err
+		return nil, err
 	}
-	return series, nil
+	return &series, nil
 }
 
-func (r *Repository) FindAllSeriesByTagID(tagID string, page int) ([]models.Series, error) {
-	var series []models.Series
+func (r *SeriesRepository) Delete(series *models.Series) error {
+	if err := r.DB.Delete(series).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *SeriesRepository) FindByNameOrCreate(series *models.Series) (*models.Series, error) {
 	if err := r.DB.
-		Preload("Tags").
-		Joins("JOIN series_tags ON series_tags.series_id = series.id").
-		Where("series_tags.tag_id = ?", tagID).
-		Limit(PAGE_SIZE).
-		Offset((page - 1) * PAGE_SIZE).
-		Order("name ASC").
-		Find(&series).Error; err != nil {
+		Where("name = ?", series.Name).
+		FirstOrCreate(series).
+		Error; err != nil {
 		return nil, err
 	}
 	return series, nil
-}
-
-func (r *Repository) CountSeriesByTagID(tagID string) (int64, error) {
-	var count int64
-	if err := r.DB.Model(&models.Series{}).
-		Joins("JOIN series_tags ON series_tags.series_id = series.id").
-		Where("series_tags.tag_id = ?", tagID).
-		Count(&count).Error; err != nil {
-		return 0, err
-	}
-	return count, nil
 }

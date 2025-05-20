@@ -50,7 +50,7 @@ ENV COVER_DIRECTORY="covers"
 ENV DATABASE_PATH="comics.db"
 ENV JWT_TOKEN="your_jwt_secret"
 ENV API_HOST="https://axolotl.bastiengrisvard.com"
-
+ENV GIN_MODE=release
 
 COPY --from=go-builder /app/api    ./api
 COPY --from=node-builder /app/dist ./dist

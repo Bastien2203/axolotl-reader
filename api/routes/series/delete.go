@@ -1,24 +1,29 @@
-package series
+package series_routes
 
 import (
 	"net/http"
 
 	"github.com/Bastien2203/comics-reader/jobs"
 	"github.com/Bastien2203/comics-reader/logs"
-	"github.com/Bastien2203/comics-reader/models"
 	"github.com/Bastien2203/comics-reader/repositories"
-	"github.com/Bastien2203/comics-reader/routes/books"
+	books_routes "github.com/Bastien2203/comics-reader/routes/books"
+
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
-func Delete(db *gorm.DB, c *gin.Context) {
+func Delete(
+	comicRepository *repositories.ComicRepository,
+	seriesRepository *repositories.SeriesRepository,
+	tagRepository *repositories.TagRepository,
+	c *gin.Context,
+) {
 	id := c.Param("id")
 
-	// Check if the comic exists
-	var series models.Series
-	if err := db.Where("id = ?", id).First(&series).Error; err != nil {
+	// Check if the series exists
+	series, err := seriesRepository.FindOneByID(id)
+	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "series not found"})
 			return
@@ -29,26 +34,30 @@ func Delete(db *gorm.DB, c *gin.Context) {
 	}
 
 	// delete all comics in the series
-	var comics []models.Comic
-	if err := db.Where("series_id = ?", id).Find(&comics).Error; err != nil {
+	comics, err := comicRepository.FindBySeries(series.ID)
+	if err != nil {
 		logs.Logger.Error("failed to find comics", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
 		return
 	}
 
 	for _, comic := range comics {
-		books.DeleteComic(comic, db, c)
+		books_routes.DeleteComic(&comic, comicRepository, c)
 	}
 
 	// delete the series
-	if err := db.Delete(&series).Error; err != nil {
+	if err := seriesRepository.Delete(series); err != nil {
 		logs.Logger.Error("failed to delete series", zap.Error(err))
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "database error"})
 		return
 	}
 
+	// TODO : when series will have its own cover, delete it
+
 	jobs.Queue.Submit(&jobs.GenerateOPDSFeedJob{
-		Repository: repositories.Repository{DB: db},
+		SeriesRepository: seriesRepository,
+		ComicRepository:  comicRepository,
+		TagRepository:    tagRepository,
 	})
 
 	c.Status(http.StatusNoContent)

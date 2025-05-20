@@ -4,21 +4,27 @@ import (
 	"context"
 	"time"
 
-	opds_v2 "github.com/Bastien2203/comics-reader/opds/v2"
 	"github.com/Bastien2203/comics-reader/repositories"
+	opds_v2 "github.com/Bastien2203/comics-reader/routes/opds/v2"
 )
 
 type GenerateOPDSFeedJob struct {
-	Repository repositories.Repository
-	state      JobState
-	createdAt  time.Time
-	finishedAt time.Time
+	SeriesRepository *repositories.SeriesRepository
+	ComicRepository  *repositories.ComicRepository
+	TagRepository    *repositories.TagRepository
+	state            JobState
+	createdAt        time.Time
+	finishedAt       time.Time
 }
 
-func (j GenerateOPDSFeedJob) Name() string { return "GenerateOPDSFeedJob: " }
+func (j *GenerateOPDSFeedJob) Name() string { return "GenerateOPDSFeedJob: " }
 
 func (j *GenerateOPDSFeedJob) Run(ctx context.Context) error {
-	return opds_v2.GenerateGlobalFeed(j.Repository)
+	return opds_v2.GenerateGlobalFeed(
+		j.SeriesRepository,
+		j.TagRepository,
+		j.ComicRepository,
+	)
 }
 
 func (j *GenerateOPDSFeedJob) State() JobState {

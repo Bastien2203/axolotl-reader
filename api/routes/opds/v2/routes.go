@@ -4,13 +4,12 @@ import (
 	"fmt"
 
 	"github.com/Bastien2203/comics-reader/logs"
-	"github.com/Bastien2203/comics-reader/repositories"
 	route_utils "github.com/Bastien2203/comics-reader/routes/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
 
-func Catalog(repository repositories.Repository, c *gin.Context) {
+func Catalog(c *gin.Context) {
 	page := route_utils.Page(c)
 	tag := route_utils.GetTag(c)
 
@@ -29,7 +28,7 @@ func Catalog(repository repositories.Repository, c *gin.Context) {
 	c.JSON(200, feed)
 }
 
-func Series(repository repositories.Repository, c *gin.Context) {
+func Series(c *gin.Context) {
 	page := route_utils.Page(c)
 	seriesID := c.Param("id")
 
