@@ -2,7 +2,7 @@
 # 1) Build Frontend (Node + Vite)                                      #
 ########################################################################
 ARG BUILDPLATFORM
-FROM --platform=linux/arm/v7 node:23.11-bullseye-slim AS node-builder
+FROM --platform=linux/amd64 node:23.11-bullseye-slim AS node-builder
 
 WORKDIR /app
 COPY app/package.json app/package-lock.json ./
