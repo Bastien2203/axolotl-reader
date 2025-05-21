@@ -14,10 +14,32 @@ mkdir data/covers
 touch data/comics.db
 ```
 
+
+Create a `.env` file in the root of the project with the following content:
+
+```sh
+# JWT secret used to sign the JWT token (change it to something else)
+JWT_TOKEN=your_jwt_secret
+
+# The host of your APP
+API_HOST=https://axolotl.bastiengrisvard.com
+
+# Directory in the container where books, covers and database will be stored
+BOOK_DIRECTORY=data 
+COVER_DIRECTORY=covers
+DATABASE_PATH=comics.db
+
+# Environment variables
+ENV=production
+GIN_MODE=release
+```
+
+
 Run the lastest version of the docker image:
 
 ```sh
 docker run -d \
+  --env-file .env \
   -p 8888:8080 \
   -v $(pwd)/data/comics.db:/app/comics.db \
   -v $(pwd)/data/books:/app/data \
@@ -76,9 +98,6 @@ npm run dev
 
 ### Frontend
 - [ ] Add delete modal for series
-- [ ] Pagnination for series (in library and favorites)
-- [ ] Create a dedicated route in the Router for series (actually its conditionnaly rendered)
-- [ ] Create a dedicated route in the Router for the reader (actually its conditionnaly rendered)
 - [ ] In ImportBook instead of using facets routes, get all tags/seriesNames/authors from the REST Api routes
 - [ ] Add downloads possibility 
 - [ ] Fix the PWA (dont works offline for now)
@@ -87,3 +106,4 @@ npm run dev
 ### Ops
 - [ ] Remove JWT_TOKEN env var from Dockerfile and get it from docker run 
 - [ ] Build time for arm64 is too long 
+- [ ] Add tags for release 

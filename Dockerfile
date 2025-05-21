@@ -53,14 +53,6 @@ RUN apk add --no-cache --virtual .runtime-deps sqlite
 
 WORKDIR /app
 
-ENV ENV="production" \
-    BOOK_DIRECTORY="data" \
-    COVER_DIRECTORY="covers" \
-    DATABASE_PATH="comics.db" \
-    JWT_TOKEN="your_jwt_secret" \
-    API_HOST="https://axolotl.bastiengrisvard.com" \
-    GIN_MODE=release
-
 COPY --from=go-builder /app/api    ./api
 COPY --from=node-builder /app/dist ./dist
 
