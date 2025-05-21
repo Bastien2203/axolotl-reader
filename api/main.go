@@ -100,7 +100,7 @@ func main() {
 		jobsGroup.GET("", func(c *gin.Context) { jobs_routes.GetAll(c) })
 	}
 
-	opdsV2Group := r.Group("/opds/v2")
+	opdsV2Group := r.Group("/opds/v2", middleware.AuthRequired)
 	{
 		opdsV2Group.GET("", opds_v2.Catalog)
 		opdsV2Group.GET("/series/:id", opds_v2.Series)
