@@ -1,7 +1,10 @@
-<div style="display: flex; flex-direction: column; align-items: center; justify-content:center; border-bottom: 1px solid #ccc; padding-bottom: 1em; margin-bottom: 2em; width: 100%;">
-    <img src="./.github/images/icon.png" alt="Logo" width="200"/> 
-    <h1 style="border: none;">Axolotl Reader</h1>
-</div>
+<p align="center">
+  <img src="./.github/images/icon.png" alt="Logo" width="200"/>
+</p>
+
+<h1 align="center">Axolotl Reader</h1>
+
+[![Docker Image](https://img.shields.io/badge/docker-latest-blue?logo=docker)](https://github.com/users/bastien2203/packages/container/package/axolotl-reader)
 
 
 ## Getting started
@@ -50,11 +53,16 @@ docker run -d \
 ```
 
 
+## Tech stack
+
+- **Frontend**: React + TypeScript + Vite + TailwindCSS + DaisyUI
+- **Backend**: Go + Gin + Gorm + SQLite
+
+
+
 ## Development
 
 // TODO : Add a real dev environment
-
-
 
 ```sh
 mkdir -p api/data
@@ -91,16 +99,16 @@ npm run dev
 ### Backend
 - [ ] Remove facets route when frontend finished removing the usage
 - [ ] Add reading progress in the API (should be also available offline in the app)
-- [ ] Actually series cover is the first book cover, we should add a dedicated field for it
+- [ ] Currently series cover is the first book cover, we should add a dedicated field for it
 - [ ] Add Bulk import for series
-- [ ] Actually its possible to add a book that is not part of a series, does we want to keep this ? (it needs to be fixed in the frontend too)
+- [ ] Currently its possible to add a book that is not part of a series, do we want to keep this ? (it needs to be fixed in the frontend too)
 
 
 ### Frontend
 - [ ] Add delete modal for series
 - [ ] In ImportBook instead of using facets routes, get all tags/seriesNames/authors from the REST Api routes
 - [ ] Add downloads possibility 
-- [ ] Fix the PWA (dont works offline for now)
+- [ ] Fix the PWA (doesnt work offline for now)
 
 
 ### Ops
