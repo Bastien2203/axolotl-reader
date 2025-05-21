@@ -1,29 +1,36 @@
 import { useCallback, useRef, useState } from "react";
-import { useAutoHideOverlay } from "../../hooks/reader/useAutoHideOverlay";
-import { useBookLoader } from "../../hooks/reader/useBookLoader";
-import { useImageProgress } from "../../hooks/reader/useImageProgress";
-import ReaderOverlay from "./ReaderOverlay";
-import { useTap } from "../../hooks/reader/useTap";
-import { Publication } from "../../services/OPDS";
+import { useAutoHideOverlay } from "../hooks/reader/useAutoHideOverlay";
+import { useBookLoader } from "../hooks/reader/useBookLoader";
+import { useImageProgress } from "../hooks/reader/useImageProgress";
+import ReaderOverlay from "../components/reader/ReaderOverlay";
+import { useTap } from "../hooks/reader/useTap";
+import { navigationDocument, Publication } from "../services/OPDS";
+import { LoaderFunction, useLoaderData, useNavigate } from "react-router-dom";
+import { API_HOST } from "../types";
 
-
-type ReaderProps = {
-    publication: Publication;
-    onClose?: () => void;
-    onNext?: () => void;
-    onPrev?: () => void;
+export const readerLoader: LoaderFunction<Publication> = async ({ params }) => {
+    const { seriesId, bookId } = params
+    const data = await navigationDocument({ url: `${API_HOST}/opds/v2/series/${seriesId}` })
+    const publication = data.publications?.find(p => p.id === bookId)
+    if (!publication) throw new Response("Not Found", { status: 404 })
+    return { publication }
 }
 
-const Reader = (props: ReaderProps) => {
+
+
+const Reader = () => {
     const [overlay, setOverlay] = useState(true);
     const [progress, setProgress] = useState(0);
     const scrollRef = useRef<HTMLDivElement>(null);
     const showOverlay = useCallback(() => setOverlay(true), []);
     const { onTouchStart, onTouchEnd } = useTap(showOverlay);
+    const { publication } = useLoaderData<{ publication: Publication }>()
+    const navigate = useNavigate();
 
-    const { images, loading } = useBookLoader(props.publication);
+    const { images, loading } = useBookLoader(publication);
     useAutoHideOverlay(overlay, loading, () => setOverlay(false));
-    useImageProgress(images, scrollRef, props.publication, setProgress);
+    useImageProgress(images, scrollRef, publication, setProgress);
+
 
 
     if (loading) {
@@ -43,7 +50,7 @@ const Reader = (props: ReaderProps) => {
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
         >
-            {overlay && <ReaderOverlay onClose={props.onClose} progress={progress} />}
+            {overlay && <ReaderOverlay onClose={() => navigate(-1)} progress={progress} />}
 
             <div className="flex flex-col items-center justify-start h-full">
                 {images.map((src, i) => (

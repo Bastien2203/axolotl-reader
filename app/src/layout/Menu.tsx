@@ -1,7 +1,6 @@
 import { Download, Heart, Home, Import, LibraryBig, LogOut, Moon, Settings, Sun } from "lucide-react";
 import { useEffect } from "react";
 import {  Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { SeriesPageProvider } from "../contexts/SeriesPageContext";
 
 
 const items = [
@@ -79,9 +78,7 @@ const Menu = () => {
       </aside>
 
       <main className="flex-1 h-screen overflow-hidden pb-16 md:pb-0">
-        <SeriesPageProvider>
-          <Outlet />
-        </SeriesPageProvider>
+        <Outlet />
       </main>
     </div>
   );

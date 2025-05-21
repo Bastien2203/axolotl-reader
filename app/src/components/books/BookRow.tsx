@@ -14,8 +14,6 @@ type BookRowProps = {
 }
 
 const BookRow = (props: BookRowProps) => {
-
-
     return <tr className="list-row" style={{ height: "max(15vw, 10em)" }}>
         <td className="flex justify-between hover:opacity-60 cursor-pointer w-full" onClick={() => props.openBook?.()} >
             <SecureImage

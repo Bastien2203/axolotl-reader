@@ -3,12 +3,14 @@ import JSZip from "jszip";
 import { Publication } from "../../services/OPDS";
 
 
-export const useBookLoader = (book: Publication) => {
+export const useBookLoader = (book: Publication | null) => {
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState<string | null>("Loading book...");
   const [objectUrls, setObjectUrls] = useState<string[]>([]);
 
   useEffect(() => {
+    if (!book) return;
+    
     const link = book.acquisition
     if (!link || !link.type) throw new Error("No acquisition link found");
 

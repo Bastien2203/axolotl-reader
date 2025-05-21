@@ -10,62 +10,52 @@ import FavoritesSeries from "./pages/FavoritesSeries"
 import ErrorPage from "./pages/errors/ErrorPage"
 import ManageUsers from "./pages/settings/ManageUsers"
 import Jobs from "./pages/settings/Jobs"
+import Reader, { readerLoader } from "./pages/Reader"
 
+import SeriesPage, { seriesLoader } from "./pages/SeriesPage"
 
-const Router = () => {
-
-    const router = createBrowserRouter([
+export const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <Menu />,
+      errorElement: <ErrorPage />,
+      children: [
+        { index: true, element: <Home /> },
+        { path: "library", element: <Library /> },
+        { path: "favorites", element: <FavoritesSeries /> },
+        { path: "import", element: <ImportBook /> },
+        { path: "downloads", element: <Downloads /> },
         {
-            path: "/login",
-            element: <Login />
+          path: "settings",
+          children: [
+            { index: true, element: <Settings /> },
+            { path: "manage-users", element: <ManageUsers /> },
+            { path: "jobs", element: <Jobs /> },
+          ],
         },
+  
+        // --- Series & Reader ---
         {
-            path: "/",
-            element: <Menu />,
-            errorElement: <ErrorPage/>,
-            children: [
-                {
-                    path: "/",
-                    element: <Home />
-                },
-                {
-                    path: "/favorites",
-                    element: <FavoritesSeries />
-                },
-                {
-                    path: "/library",
-                    element: <Library/>
-                },
-                {
-                    path: "/import",
-                    element: <ImportBook />
-                },
-                {
-                    path: "/settings",
-                    children: [
-                        {
-                            path: "",
-                            element: <Settings />
-                        },
-                        {
-                            path: "manage-users",
-                            element: <ManageUsers />
-                        },
-                        {
-                            path: "jobs",
-                            element: <Jobs/>
-                        }
-                    ]
-                },
-                {
-                    path: "/downloads",
-                    element: <Downloads/>
-                }
-            ]
-        }
-    ])
+          path: "series/:seriesId",
+          children: [
+            { 
+                index: true,
+                loader: seriesLoader,
+                element: <SeriesPage />,
+            },
+            {
+              path: "book/:bookId",
+              element: <Reader />,
+              loader: readerLoader,
+            },
+          ],
+        },
+      ],
+    },
+    { path: "/login", element: <Login /> },
+  ])
+  
 
-    return <RouterProvider router={router} />
-}
+const Router = () => <RouterProvider router={router} />
 
 export default Router

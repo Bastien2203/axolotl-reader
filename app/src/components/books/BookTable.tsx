@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
-import { userReader } from "../../contexts/ReaderContext";
+import { useState } from "react";
 import { setBookProgress, getBookProgress } from "../../services/Book";
 import DeleteBookModal from "../modals/DeleteBookModal";
 import BookRow from "./BookRow";
 import { Publication } from "../../services/OPDS";
+import { useBook } from "../../hooks/useBook";
 
 
 type BookTableProps = {
@@ -13,38 +12,12 @@ type BookTableProps = {
 }
 
 const BookTable = (props: BookTableProps) => {
-    const { showReader } = userReader()
-    const location = useLocation();
+    const { selectBook } = useBook()
     const [deleteModalOpen, setDeleteModalOpen] = useState<string | null>(null);
-
-    const locationChangeHandler = () => {
-        const url = new URL(window.location.href);
-        const bookId = url.searchParams.get("book");
-
-        if (bookId) {
-            const foundBook = props.books.find((b) => b.id === bookId);
-
-            if (foundBook) {
-                showReader({
-                    publication: foundBook,
-                })
-            }
-        }
-    }
 
     const markAsRead = (identifier: string) => {
         setBookProgress(identifier, 100)
     }
-
-    useEffect(() => {
-        if (props.books.length === 0) return;
-        locationChangeHandler();
-    }, [props.books]);
-
-    useEffect(() => {
-        locationChangeHandler();
-    }, [location]);
-
 
 
     return <>
@@ -61,12 +34,10 @@ const BookTable = (props: BookTableProps) => {
                         key={i}
                         progress={getBookProgress(book.id)?.progress ?? null}
                         book={book}
-                        openBook={() => showReader({
-                            publication: book,
-                        })}
+                        openBook={() => selectBook(book.id)}
                         markAsRead={() => markAsRead(book.id)}
                         onDelete={() => setDeleteModalOpen(book.id)}
-                        download={() => {}}
+                        download={() => { }}
                     />
                 ))}
             </tbody>

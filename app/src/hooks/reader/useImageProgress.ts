@@ -5,10 +5,11 @@ import { Publication } from "../../services/OPDS";
 export const useImageProgress = (
   images: string[],
   containerRef: React.RefObject<HTMLDivElement | null>,
-  book: Publication,
+  book: Publication | null,
   setProgress: (p: number) => void
 ) => {
   useEffect(() => {
+    if (!book || !images.length) return;
     const el = containerRef.current;
     if (!el) return;
 
