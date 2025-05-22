@@ -10,12 +10,13 @@
 ## Screenshots
 
 <p align="center">
-  <img src="./.github/images/screenshot_home.png" alt="Screenshot 1" width="300" />
-   <img src="./.github/images/screenshot_series.png" alt="Screenshot 2" width="300"/> 
+  <img src="./.github/images/screenshot_home.png" alt="Screenshot 1" />
+   <img src="./.github/images/screenshot_series.png" alt="Screenshot 2" /> 
 </p>
 
 <p align="center">
-  <img src="./.github/images/screenshot_phone.png" alt="Screenshot 3" height="300"/>
+  <img src="./.github/images/screenshot_phone_2.png" alt="Screenshot Phone" height="500"/>
+  <img src="./.github/images/screenshot_phone_1.png" alt="Screenshot Phone" height="500"/>
 </p>
 
 
