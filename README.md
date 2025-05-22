@@ -92,12 +92,6 @@ This project is split into two folders:
 
 
 
-
-
-
-
-
-
 ## Development
 
 // TODO : Add a real dev environment
