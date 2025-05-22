@@ -14,7 +14,7 @@ const Home = () => {
   useEffect(() => {
     navigationDocument().then((feed) => {
       if (feed.facets) {
-        setFacets(feed.facets)
+        setFacets(feed.facets);
       }
     }).catch((err) => {
       console.error(err);
@@ -31,8 +31,8 @@ const Home = () => {
     <h2 className="text-xl font-semibold">Series by categories</h2>
 
     {
-      facets?.map((facet) => (
-        <FacetCarroussel facet={facet} key={facet.metadata.title} />
+      facets?.map((facet,i) => (
+        <FacetCarroussel key={i} facet={facet}  />
       ))
     }
 

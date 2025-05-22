@@ -40,16 +40,19 @@ const FacetCarroussel = (props: FacetCarrousselProps) => {
     <div className="overflow-x-auto flex gap-2">
       {
 
-        props.facet.links?.map((link) => (
-          <div className={`badge p-4  rounded-full ${selectedLink === link ? "badge-primary" : "badge-outline"
+        props.facet.links?.map((link,i ) => {
+          if (!link.title) {
+            return null;
+          }
+          
+         return <div key={i} className={`badge p-4  rounded-full ${selectedLink === link ? "badge-primary" : "badge-outline"
             } cursor-pointer`}
             onClick={() => {
               changeLink(link);
-            }}
-            key={link.title}>
+            }}>
             {link.title}
           </div>
-        ))
+})
       }
     </div>
     {

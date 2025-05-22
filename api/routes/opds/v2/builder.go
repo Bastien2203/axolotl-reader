@@ -80,6 +80,9 @@ func BuildGlobalFeed(
 
 	tagFacetLinks := make([]Link, 0)
 	for _, tag := range tags {
+		if tag.Name == "" {
+			continue
+		}
 		isActive := currentTag != nil && tag.ID == currentTag.ID
 		properties := map[string]string{}
 		if isActive {

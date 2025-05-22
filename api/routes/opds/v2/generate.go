@@ -67,6 +67,9 @@ func GenerateGlobalFeed(
 	// Generate the global feed for each tag
 	existingTags := make(map[string]struct{}, len(tags))
 	for _, tag := range tags {
+		if tag.Name == "" {
+			continue
+		}
 		err = GenerateGlobalFeedByTag(seriesRepository, &tag, tags)
 		existingTags[fmt.Sprintf("%d", tag.ID)] = struct{}{}
 		if err != nil {
