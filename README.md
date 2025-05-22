@@ -154,8 +154,7 @@ npm run dev
 - [ ] Add possibility download a book (or an entire series) in the app
 - [ ] Add pagination in `<SeriesTable />`
 
-### Ops
-- [ ] Remove JWT_TOKEN env var from Dockerfile and get it from docker run 
+### Ops 
 - [ ] Build time for arm64 is too long 
 - [ ] Add tags for release 
 
