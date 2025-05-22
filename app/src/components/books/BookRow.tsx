@@ -24,7 +24,7 @@ const BookRow = (props: BookRowProps) => {
                 token={localStorage.getItem("token") || ""}
             />
 
-            <span className="text-base-content flex flex-col gap-1 items-start justify-center truncate">
+            <span className="text-base-content flex flex-col gap-1 items-start justify-center w-[30vw] truncate">
                 {props.book.metadata.title}
                 <span className="text-base-content opacity-60 text-sm">{props.book.metadata.authors?.join(", ") || "Unknown Author"}</span>
                 <br />

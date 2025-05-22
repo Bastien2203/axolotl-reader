@@ -11,8 +11,8 @@ import ErrorPage from "./pages/errors/ErrorPage"
 import ManageUsers from "./pages/settings/ManageUsers"
 import Jobs from "./pages/settings/Jobs"
 import Reader, { readerLoader } from "./pages/Reader"
-
 import SeriesPage, { seriesLoader } from "./pages/SeriesPage"
+
 
 export const router = createBrowserRouter([
     {

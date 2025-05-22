@@ -1,36 +1,89 @@
-import { useCallback, useRef, useState } from "react";
-import { useAutoHideOverlay } from "../hooks/reader/useAutoHideOverlay";
-import { useBookLoader } from "../hooks/reader/useBookLoader";
-import { useImageProgress } from "../hooks/reader/useImageProgress";
+import { useCallback, useEffect, useState } from "react";
 import ReaderOverlay from "../components/reader/ReaderOverlay";
-import { useTap } from "../hooks/reader/useTap";
+import { useTap } from "../hooks/useTap";
 import { navigationDocument, Publication } from "../services/OPDS";
 import { LoaderFunction, useLoaderData, useNavigate } from "react-router-dom";
 import { API_HOST } from "../types";
+import { VirtualScroll } from "../components/common/VirtualScroll";
+import JSZip, { JSZipObject } from "jszip";
+import ZipImage from "../components/common/ZipImage";
 
 export const readerLoader: LoaderFunction<Publication> = async ({ params }) => {
     const { seriesId, bookId } = params
     const data = await navigationDocument({ url: `${API_HOST}/opds/v2/series/${seriesId}` })
     const publication = data.publications?.find(p => p.id === bookId)
-    if (!publication) throw new Response("Not Found", { status: 404 })
-    return { publication }
+    if (!publication || !data.publications) throw new Response("Not Found", { status: 404 })
+    const nextPublication = data.publications?.at(data.publications.indexOf(publication) + 1)
+    return { publication, nextPublication, seriesId }
 }
 
+
+const useAutoHideOverlay = (overlay: boolean, loading: string | null, onHide: () => void) => {
+    useEffect(() => {
+        if (!overlay || loading) return;
+        const timeout = setTimeout(onHide, 5000);
+        return () => clearTimeout(timeout);
+    }, [overlay, loading]);
+};
 
 
 const Reader = () => {
     const [overlay, setOverlay] = useState(true);
-    const [progress, setProgress] = useState(0);
-    const scrollRef = useRef<HTMLDivElement>(null);
+    const [loading, setLoading] = useState<string | null>("");
+    const [index, setIndex] = useState(0);
+    const [items, setItems] = useState<JSZipObject[]>([]);
+
     const showOverlay = useCallback(() => setOverlay(true), []);
-    const { onTouchStart, onTouchEnd } = useTap(showOverlay);
-    const { publication } = useLoaderData<{ publication: Publication }>()
     const navigate = useNavigate();
-
-    const { images, loading } = useBookLoader(publication);
+    const { publication, nextPublication, seriesId } = useLoaderData<{ publication: Publication, nextPublication?: Publication, seriesId: string }>();
+    const { onTouchStart, onTouchEnd } = useTap(showOverlay);
     useAutoHideOverlay(overlay, loading, () => setOverlay(false));
-    useImageProgress(images, scrollRef, publication, setProgress);
 
+
+    useEffect(() => {
+        const loadPublication = async () => {
+            setLoading("Loading book...")
+            const link = publication?.acquisition
+            if (!link?.type) throw new Error("No acquisition link found")
+
+            try {
+                const response = await fetch(link.href, {
+                    headers: {
+                        Accept: link.type,
+                        Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    },
+                })
+
+                if (!response.ok) throw new Error("Failed to fetch book")
+
+                const zip = await JSZip.loadAsync(await response.blob())
+                const images = Object.values(zip.files).filter(file =>
+                    /\.(jpe?g|png|gif|webp)$/i.test(file.name)
+                )
+                setItems(images)
+            } catch (err) {
+                console.error(err)
+            } finally {
+                setLoading(null)
+            }
+        }
+
+        loadPublication()
+    }, [publication])
+
+    const onNext = () => {
+        if (nextPublication) {
+            navigate(`/series/${seriesId}/book/${nextPublication.id}`, {
+                replace: true,
+            })
+        } else {
+            navigate(-1)
+        }
+    }
+
+    const onClose = () => {
+        navigate(-1)
+    }
 
 
     if (loading) {
@@ -42,29 +95,43 @@ const Reader = () => {
         );
     }
 
+
     return (
         <div
             className="absolute z-10 top-0 left-0 reader bg-base-300 overflow-scroll"
-            ref={scrollRef}
             onClick={showOverlay}
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
         >
-            {overlay && <ReaderOverlay onClose={() => navigate(-1)} progress={progress} />}
+            {overlay && <ReaderOverlay onClose={() => onClose()} progress={index / (items.length - 1) * 100} />}
 
-            <div className="flex flex-col items-center justify-start h-full">
-                {images.map((src, i) => (
-                    <img
-                        loading="lazy"
-                        data-index={i}
-                        key={i}
-                        src={src}
-                        alt={`Page ${i + 1}`}
-                        style={{ width: "100%" }}
-                        className="reader-image"
-                    />
-                ))}
-            </div>
+            <VirtualScroll
+                items={items}
+                buffer={5}
+                initialIndex={0}
+                onIndexChange={(i) => setIndex(i)}
+                renderItem={(file, idx) => file.async("blob").then(blob => <ZipImage key={idx} blobUrl={URL.createObjectURL(blob)} />)}
+                lastItem={nextPublication ?
+                    <div className="w-full h-[50vh] flex items-center justify-center">
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => {
+                                onNext()
+                            }}
+                        >
+                            Next book: {nextPublication.metadata.title}
+                        </button>
+                    </div> : <div className="w-full h-[50vh] flex items-center justify-center">
+                        <button
+                            className="btn btn-primary"
+                            onClick={() => onClose()}
+                        >
+                            Back to series
+                        </button>
+                    </div>
+                }
+                className="w-full h-screen"
+            />
         </div>
     );
 };
