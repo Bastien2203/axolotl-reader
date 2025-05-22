@@ -4,6 +4,8 @@
 
 <h1 align="center">Axolotl Reader</h1>
 
+**Axolotl Reader** is a self-hosted web app to organize, browse, and read your comics, manga, or manhwa collection.
+
 [![Docker Image](https://img.shields.io/badge/docker-latest-blue?logo=docker)](https://github.com/users/bastien2203/packages/container/package/axolotl-reader)
 
 
@@ -71,8 +73,28 @@ docker run -d \
 
 ## Tech stack
 
-- **Frontend**: React + TypeScript + Vite + TailwindCSS + DaisyUI
-- **Backend**: Go + Gin + Gorm + SQLite
+This project is split into two folders:  
+`api/` for the Go backend  
+
+![Go](https://img.shields.io/badge/Go-00ADD8?logo=go&logoColor=white)
+![Gin](https://img.shields.io/badge/Gin-000000?logo=go&label=Gin&labelColor=black)
+![Gorm](https://img.shields.io/badge/Gorm-ffc107?logo=go&label=Gorm)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?logo=sqlite&logoColor=white)
+
+<br>
+
+`app/` for the React frontend
+
+![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?logo=tailwindcss&logoColor=white)
+![DaisyUI](https://img.shields.io/badge/DaisyUI-FF72B1?logo=daisyui&logoColor=white)
+
+
+
+
+
+
 
 
 
@@ -118,16 +140,26 @@ npm run dev
 - [ ] Currently series cover is the first book cover, we should add a dedicated field for it
 - [ ] Add Bulk import for series
 - [ ] Currently its possible to add a book that is not part of a series, do we want to keep this ? (it needs to be fixed in the frontend too)
+- [ ] When registering book cover convert it to webp
+- [ ] Convert all images in cbz to webp ?
 
 
 ### Frontend
 - [ ] Add delete modal for series
-- [ ] In ImportBook instead of using facets routes, get all tags/seriesNames/authors from the REST Api routes
-- [ ] Add downloads possibility 
-- [ ] Fix the PWA (doesnt work offline for now)
+- [ ] Refacto ImportBook :
+  - Instead of using facets routes, get all tags/seriesNames/authors from the REST Api routes 
+  - Use a bulk post instead of a post for each book
 
+- [ ] Fix the PWA (doesnt work offline for now)
+- [ ] Add possibility download a book (or an entire series) in the app
+- [ ] Add pagination in `<SeriesTable />`
 
 ### Ops
 - [ ] Remove JWT_TOKEN env var from Dockerfile and get it from docker run 
 - [ ] Build time for arm64 is too long 
 - [ ] Add tags for release 
+
+
+## License
+
+MIT © 2025 [Bastien Grisvard](https://github.com/bastien2203)
