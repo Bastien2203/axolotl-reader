@@ -7,6 +7,21 @@
 [![Docker Image](https://img.shields.io/badge/docker-latest-blue?logo=docker)](https://github.com/users/bastien2203/packages/container/package/axolotl-reader)
 
 
+## Screenshots
+
+<p align="center">
+  <img src="./.github/images/screenshot_home.png" alt="Screenshot 1" width="300" />
+   <img src="./.github/images/screenshot_series.png" alt="Screenshot 2" width="300"/> 
+</p>
+
+<p align="center">
+  <img src="./.github/images/screenshot_phone.png" alt="Screenshot 3" height="300"/>
+</p>
+
+
+
+
+
 ## Getting started
 
 Create directories that will be used to store the database and the books:
