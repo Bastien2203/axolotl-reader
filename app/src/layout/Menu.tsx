@@ -1,4 +1,4 @@
-import { Download, Heart, Home, Import, LibraryBig, LogOut, Moon, Settings, Sun } from "lucide-react";
+import { Heart, Home, Import, LibraryBig, LogOut, Moon, Settings, Sun } from "lucide-react";
 import { useEffect } from "react";
 import {  Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 
@@ -8,7 +8,7 @@ const items = [
   { icon: LibraryBig , text: "Library", href: "/library" },
   { icon: Heart, text: "Favorites", href: "/favorites" },
   { icon: Import, text: "Import", href: "/import" },
-  { icon: Download, text: "Downloads", href: "/downloads" },
+  /*{ icon: Download, text: "Downloads", href: "/downloads" },*/
   { icon: Settings, text: "Settings", href: "/settings" },
 ];
 

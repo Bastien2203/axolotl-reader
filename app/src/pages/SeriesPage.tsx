@@ -16,15 +16,15 @@ export const seriesLoader: LoaderFunction<Feed> = async ({ params, request }) =>
 }
 
 const SeriesPage = () => {
-    const search=  new URLSearchParams(window.location.search);
-    const page  = Number(search.get("page")) || 1;
+    const search = new URLSearchParams(window.location.search);
+    const page = Number(search.get("page")) || 1;
     const [books, setBooks] = useState<Publication[]>();
     const [totalPages, setTotalPages] = useState<number>();
     const feed = useLoaderData<Feed>()
     const navigate = useNavigate();
 
     const setPage = (page: number) => {
-        navigate("?page=" + page);
+        navigate("?page=" + page, { replace: true });
     }
 
 

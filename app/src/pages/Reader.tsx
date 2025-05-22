@@ -7,6 +7,7 @@ import { API_HOST } from "../types";
 import { VirtualScroll } from "../components/common/VirtualScroll";
 import JSZip, { JSZipObject } from "jszip";
 import ZipImage from "../components/common/ZipImage";
+import { setBookProgress } from "../services/Book";
 
 export const readerLoader: LoaderFunction<Publication> = async ({ params }) => {
     const { seriesId, bookId } = params
@@ -70,6 +71,15 @@ const Reader = () => {
 
         loadPublication()
     }, [publication])
+
+    useEffect(() => {
+    
+        const progress = index / (items.length - 1) * 100
+        setBookProgress(
+            publication.id,
+            progress > 95 ? 100 : progress
+        )
+    }, [index])
 
     const onNext = () => {
         if (nextPublication) {

@@ -14,8 +14,8 @@ type BookRowProps = {
 }
 
 const BookRow = (props: BookRowProps) => {
-    return <tr className="list-row" style={{ height: "max(15vw, 10em)" }}>
-        <td className="flex justify-between hover:opacity-60 cursor-pointer w-full" onClick={() => props.openBook?.()} >
+    return <tr className="list-row" style={{ height: "max(15vw, 10em)"}}>
+        <td className="flex justify-between hover:opacity-60 cursor-pointer w-full" onClick={() => props.openBook?.()} style={{opacity: props.progress === 100 ? 0.2 : 1 }}>
             <SecureImage
                 alt={props.book.metadata.title}
                 className="object-cover rounded-md h-full p-1"
@@ -27,18 +27,9 @@ const BookRow = (props: BookRowProps) => {
             <span className="text-base-content flex flex-col gap-1 items-start justify-center w-[30vw] truncate">
                 {props.book.metadata.title}
                 <span className="text-base-content opacity-60 text-sm">{props.book.metadata.authors?.join(", ") || "Unknown Author"}</span>
-                <br />
-                {
-                    props.progress && props.progress > 0 &&
-                    <progress
-                        className="progress progress-primary w-full z-1"
-                        value={props.progress}
-                        max={100} />
-
-                }
             </span>
 
-            <div></div>
+
         </td>
 
         <td className="w-0 text-right align-center">
