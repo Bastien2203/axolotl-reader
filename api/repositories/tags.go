@@ -20,6 +20,7 @@ func (r *TagRepository) FindAll() ([]models.Tag, error) {
 }
 
 func (r *TagRepository) FindByNameOrCreate(tag *models.Tag) (*models.Tag, error) {
+	models.SanitizeTag(tag)
 	if err := r.DB.
 		Where("name = ?", tag.Name).
 		FirstOrCreate(&tag).
