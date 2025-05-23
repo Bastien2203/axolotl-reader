@@ -61,6 +61,7 @@ COPY --from=node-builder /app/dist ./dist
 COPY docker-entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 RUN touch /app/api.log
+RUN chown -R axolotl:app /app
 USER axolotl
 
 
