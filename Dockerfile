@@ -49,6 +49,8 @@ RUN if [ "$TARGETARCH" = "arm" ]; then export GOARM="${TARGETVARIANT#v}"; fi && 
 ########################################################################
 FROM alpine:3.21
 
+RUN addgroup -g 1000 app && adduser -D -u 1000 -G app axolotl
+
 RUN apk add --no-cache --virtual .runtime-deps sqlite
 
 WORKDIR /app
@@ -56,5 +58,14 @@ WORKDIR /app
 COPY --from=go-builder /app/api    ./api
 COPY --from=node-builder /app/dist ./dist
 
+COPY docker-entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+USER axolotl
+
+
 EXPOSE 8080
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["./api"]
+
+
+

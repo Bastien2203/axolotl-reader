@@ -147,6 +147,7 @@ npm run dev
 - [ ] Fix the PWA (doesnt work offline for now)
 - [ ] Add possibility download a book (or an entire series) in the app
 - [ ] Add pagination in `<SeriesTable />`
+- [ ] Reader : Virtual scroll glitch when scrolling up
 
 ### Ops 
 - [ ] Build time for arm64 is too long 
@@ -156,3 +157,4 @@ npm run dev
 ## License
 
 MIT © 2025 [Bastien Grisvard](https://github.com/bastien2203)
+
