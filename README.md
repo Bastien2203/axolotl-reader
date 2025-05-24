@@ -30,7 +30,7 @@
 Create directories that will be used to store the database and the books:
 
 ```sh
-mkdir -p data/books
+mkdir -p data/
 mkdir data/covers
 touch data/comics.db
 ```
@@ -45,11 +45,6 @@ JWT_TOKEN=your_jwt_secret
 # The host of your APP
 API_HOST=https://axolotl.bastiengrisvard.com
 
-# Directory in the container where books, covers and database will be stored
-BOOK_DIRECTORY=data 
-COVER_DIRECTORY=covers
-DATABASE_PATH=comics.db
-
 # Environment variables
 ENV=production
 GIN_MODE=release
@@ -62,9 +57,7 @@ Run the lastest version of the docker image:
 docker run -d \
   --env-file .env \
   -p 8888:8080 \
-  -v $(pwd)/data/comics.db:/app/comics.db \
-  -v $(pwd)/data/books:/app/data \
-  -v $(pwd)/data/covers:/app/covers \
+  -v $(pwd)/data:/app/data \
   --restart always \
   --name axolotl-reader \
   ghcr.io/bastien2203/axolotl-reader:latest

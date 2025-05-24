@@ -49,24 +49,31 @@ RUN if [ "$TARGETARCH" = "arm" ]; then export GOARM="${TARGETVARIANT#v}"; fi && 
 ########################################################################
 FROM alpine:3.21
 
-RUN addgroup -g 1000 app && adduser -D -u 1000 -G app axolotl
-
 RUN apk add --no-cache --virtual .runtime-deps sqlite
+RUN apk add --no-cache su-exec
 
 WORKDIR /app
 
+RUN addgroup -g 1000 appgroup \
+ && adduser -D -u 1000 -G appgroup appuser
+
+
 COPY --from=go-builder /app/api    ./api
 COPY --from=node-builder /app/dist ./dist
+COPY entrypoint.sh ./entrypoint.sh
 
-COPY docker-entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-RUN touch /app/api.log
-RUN chown -R axolotl:app /app
-USER axolotl
+RUN chown -R appuser:appgroup /app
+RUN chmod +x ./entrypoint.sh
 
 
+ENV BOOK_DIRECTORY=/app/data/books \
+    COVER_DIRECTORY=/app/data/covers \
+    DATABASE_PATH=/app/data/comics.db
+
+VOLUME ["/app/data"]
+USER root
 EXPOSE 8080
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
 CMD ["./api"]
 
 

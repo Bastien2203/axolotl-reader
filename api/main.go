@@ -50,6 +50,30 @@ func main() {
 		panic("API_HOST environment variable not set")
 	}
 
+	if _, err := os.Stat(coverDir); os.IsNotExist(err) {
+		err := os.MkdirAll(coverDir, 0755)
+		if err != nil {
+			panic(fmt.Sprintf("Failed to create cover directory: %s", err))
+		}
+	}
+	if _, err := os.Stat(bookDir); os.IsNotExist(err) {
+		err := os.MkdirAll(bookDir, 0755)
+		if err != nil {
+			panic(fmt.Sprintf("Failed to create book directory: %s", err))
+		}
+	}
+
+	if os.Getenv("DATABASE_PATH") == "" {
+		panic("DATABASE_PATH environment variable not set")
+	}
+	if _, err := os.Stat(os.Getenv("DATABASE_PATH")); os.IsNotExist(err) {
+		file, err := os.Create(os.Getenv("DATABASE_PATH"))
+		if err != nil {
+			panic(fmt.Sprintf("Failed to create database file: %s", err))
+		}
+		file.Close()
+	}
+
 	db, err := gorm.Open(sqlite.Open(os.Getenv("DATABASE_PATH")), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
