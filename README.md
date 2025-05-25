@@ -144,7 +144,10 @@ npm run dev
 
 ### Ops 
 - [ ] Build time for arm64 is too long 
-- [ ] Add tags for release 
+- [ ] Add tags for release
+
+
+// In series page -> if page != 1, there is a 404 err when selecting a book => cause in page loader (router) page number is missing
 
 
 ## License
