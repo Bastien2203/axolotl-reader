@@ -9,9 +9,11 @@ import JSZip, { JSZipObject } from "jszip";
 import ZipImage from "../components/common/ZipImage";
 import { setBookProgress } from "../services/Book";
 
-export const readerLoader: LoaderFunction<Publication> = async ({ params }) => {
+export const readerLoader: LoaderFunction<Publication> = async ({ params, request }) => {
     const { seriesId, bookId } = params
-    const data = await navigationDocument({ url: `${API_HOST}/opds/v2/series/${seriesId}` })
+    const search = new URL(request.url).searchParams;
+    const page = search.get("page");
+    const data = await navigationDocument({ url: `${API_HOST}/opds/v2/series/${seriesId}`, page: Number(page ?? 1 )})
     const publication = data.publications?.find(p => p.id === bookId)
     if (!publication || !data.publications) throw new Response("Not Found", { status: 404 })
     const nextPublication = data.publications?.at(data.publications.indexOf(publication) + 1)

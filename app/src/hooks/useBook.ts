@@ -6,7 +6,10 @@ export const useBook = () => {
     const navigate = useNavigate();
     
     const selectBook = (bookId: String) => {
-        navigate(`book/${bookId}`)
+        const search = new URLSearchParams(window.location.search);
+        const newSearch = search.get("page") ? `?page=${search.get("page")}` : "";
+
+        navigate(`book/${bookId}${newSearch}`)
     };
 
     return { selectBook };
