@@ -40,7 +40,7 @@ Create a `.env` file in the root of the project with the following content:
 
 ```sh
 # JWT secret used to sign the JWT token (change it to something else)
-JWT_TOKEN=your_jwt_secret
+JWT_SECRET=your_jwt_secret
 
 # The host of your APP
 API_HOST=https://axolotl.bastiengrisvard.com
