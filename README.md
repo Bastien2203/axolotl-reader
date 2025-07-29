@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./.github/images/icon.png" alt="Logo" width="200"/>
+  <img src="./.github/images/axolotl-reader.png" alt="Logo" width="200"/>
 </p>
 
 <h1 align="center">Axolotl Reader</h1>
