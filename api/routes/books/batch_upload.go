@@ -1,7 +1,6 @@
 package books_routes
 
 import (
-	"fmt"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -70,11 +69,12 @@ func BatchUpload(
 	}
 
 	// Get cover files (if not using first page as cover)
-	var coverFiles map[string]*multipart.FileHeader
+	coverFiles := []*multipart.FileHeader{}
 	if !useFirstPageAsCover {
-		coverFiles = make(map[string]*multipart.FileHeader)
-		for _, file := range form.File["covers"] {
-			coverFiles[file.Filename] = file
+		coverFiles = form.File["covers"]
+		if len(coverFiles) != len(bookFiles) {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "number of cover files must match number of book files"})
+			return
 		}
 	}
 
@@ -118,6 +118,7 @@ func BatchUpload(
 	// Process series if provided
 	var series models.Series
 	if commonSeriesName != "" {
+		// For now, create series without cover - we'll update it with the first book's cover
 		series = models.Series{Name: commonSeriesName, Tags: tagsList}
 		if _, err := seriesRepository.FindByNameOrCreate(&series); err != nil {
 			logs.Logger.Error("db insert failed for series", zap.Error(err))
@@ -174,18 +175,8 @@ func BatchUpload(
 			})
 			coverUrl = "/covers/" + identifiers[i] + ".png"
 		} else {
-			// Look for corresponding cover file
-			var coverFile *multipart.FileHeader
-			for _, cf := range form.File["covers"] {
-				// Match cover file to book based on some convention (e.g., same base name)
-				if strings.Contains(cf.Filename, identifiers[i]) ||
-				   cf.Filename == fmt.Sprintf("cover_%d%s", i, filepath.Ext(cf.Filename)) {
-					coverFile = cf
-					break
-				}
-			}
-			
-			if coverFile == nil {
+			// Use cover file at the same index
+			if i >= len(coverFiles) {
 				result.Success = false
 				result.Error = "cover file required"
 				response.Results[i] = result
@@ -193,6 +184,7 @@ func BatchUpload(
 				continue
 			}
 
+			coverFile := coverFiles[i]
 			extension := filepath.Ext(coverFile.Filename)
 			coverPath = filepath.Join(os.Getenv("COVER_DIRECTORY"), identifiers[i]+extension)
 			if err := c.SaveUploadedFile(coverFile, coverPath); err != nil {
@@ -215,8 +207,15 @@ func BatchUpload(
 			FileURL:        bookUrl,
 			FilePath:       bookPath,
 			CoverPath:      coverPath,
-			Series:         series,
 			SeriesPosition: seriesPosition,
+		}
+
+		// Set series if provided and update series cover
+		if commonSeriesName != "" {
+			// Update series cover with current book's cover (matching original behavior)
+			series.CoverURL = coverUrl
+			seriesRepository.FindByNameOrCreate(&series)
+			comic.Series = series
 		}
 
 		if err := comicRepository.Create(&comic); err != nil {

@@ -122,7 +122,7 @@ const ImportBook = () => {
                     message: `Upload completed: ${result.summary.success} succeeded, ${result.summary.failed} failed`, 
                     type: result.summary.success > 0 ? "alert-warning" : "alert-error"
                 });
-                console.log("Failed uploads:", result.results.filter((r: any) => !r.success));
+                console.log("Failed uploads:", result.results.filter((r: { success: boolean }) => !r.success));
             } else {
                 showToast({ 
                     message: `Successfully uploaded ${result.summary.success} book(s)`, 
