@@ -140,6 +140,9 @@ func main() {
 		booksGroup.POST("", func(c *gin.Context) {
 			books_routes.Upload(comicRepository, tagRepository, authorRepository, seriesRepository, c)
 		})
+		booksGroup.POST("/batch", func(c *gin.Context) {
+			books_routes.BatchUpload(comicRepository, tagRepository, authorRepository, seriesRepository, c)
+		})
 		booksGroup.DELETE("/:id", func(c *gin.Context) { books_routes.Delete(comicRepository, seriesRepository, tagRepository, c) })
 	}
 

@@ -57,36 +57,6 @@ const ImportBook = () => {
         setBookDatas(mapped);
     };
 
-    const uploadBook = (book: {
-        title: string;
-        authors: string[];
-        seriesName?: string;
-        seriesPosition?: number;
-        file: File;
-        cover?: File;
-    }): Promise<Response> => {
-        const formData = new FormData();
-        formData.append("book", book.file);
-        formData.append("use_first_page_as_cover", useFirstPageAsCover ? "true" : "false");
-        if (book.cover) formData.append("cover", book.cover);
-        formData.append("title", book.title);
-        formData.append("authors", book.authors.join(","));
-        formData.append("tags", metadata.tags?.join(",") || "");
-        if (book.seriesName && book.seriesPosition) {
-            formData.append("series_name", book.seriesName);
-            formData.append("series_position", book.seriesPosition.toString());
-        }
-        formData.append("identifier", crypto.randomUUID());
-
-        return fetch(`${API_HOST}/books`, {
-            method: "POST",
-            body: formData,
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-        });
-    };
-
     const uploadBooks = async () => {
         const totalMB = bookDatas.reduce((acc, b) => acc + b.file.size, 0) / 1024 / 1024;
 
@@ -99,38 +69,76 @@ const ImportBook = () => {
 
         setLoading({ loading: true, percent: 0, uploadedMB: 0, totalMB });
 
-        for (let i = 0; i < bookDatas.length; i++) {
-            const book = bookDatas[i];
-            try {
-                const res = await uploadBook({
-                    title: book.title,
-                    file: book.file,
-                    authors: metadata.authors!,
-                    seriesName: seriesMode ? metadata.seriesName : undefined,
-                    seriesPosition: seriesMode ? book.seriesPosition : undefined,
-                    cover: useFirstPageAsCover ? undefined : book.cover,
-                });
-
-                if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
-
-
-                const uploadedTotal = bookDatas.slice(0, i + 1).reduce((acc, b) => acc + b.file.size, 0) / 1024 / 1024;
-
-                setLoading(prev => ({
-                    ...prev,
-                    percent: Math.round(((i + 1) / bookDatas.length) * 100),
-                    uploadedMB: uploadedTotal,
-                }));
-            } catch (err) {
-                console.error(err);
-                showToast({ message: `Error uploading book: ${err}`, type: "alert-error" });
+        try {
+            // Prepare batch form data
+            const formData = new FormData();
+            
+            // Add common metadata
+            formData.append("authors", metadata.authors!.join(","));
+            formData.append("tags", metadata.tags?.join(",") || "");
+            formData.append("use_first_page_as_cover", useFirstPageAsCover ? "true" : "false");
+            if (seriesMode && metadata.seriesName) {
+                formData.append("series_name", metadata.seriesName);
             }
-        }
 
-        setLoading({ loading: false, percent: 100, uploadedMB: totalMB, totalMB });
-        setBookDatas([]);
-        setMetadata({});
-        if (fileInputRef.current) fileInputRef.current.value = "";
+            // Add book files and metadata arrays
+            bookDatas.forEach((book) => {
+                formData.append("books", book.file);
+                formData.append("titles", book.title);
+                formData.append("identifiers", crypto.randomUUID());
+                if (seriesMode && book.seriesPosition) {
+                    formData.append("series_positions", book.seriesPosition.toString());
+                } else {
+                    formData.append("series_positions", "");
+                }
+                
+                // Add cover files if not using first page as cover
+                if (!useFirstPageAsCover && book.cover) {
+                    formData.append("covers", book.cover);
+                }
+            });
+
+            const res = await fetch(`${API_HOST}/books/batch`, {
+                method: "POST",
+                body: formData,
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(`Batch upload failed: ${res.status} - ${errorData.error || 'Unknown error'}`);
+            }
+
+            const result = await res.json();
+            
+            // Update progress to 100%
+            setLoading({ loading: false, percent: 100, uploadedMB: totalMB, totalMB });
+            
+            // Show results
+            if (result.summary.failed > 0) {
+                showToast({ 
+                    message: `Upload completed: ${result.summary.success} succeeded, ${result.summary.failed} failed`, 
+                    type: result.summary.success > 0 ? "alert-warning" : "alert-error"
+                });
+                console.log("Failed uploads:", result.results.filter((r: any) => !r.success));
+            } else {
+                showToast({ 
+                    message: `Successfully uploaded ${result.summary.success} book(s)`, 
+                    type: "alert-success"
+                });
+            }
+
+            setBookDatas([]);
+            setMetadata({});
+            if (fileInputRef.current) fileInputRef.current.value = "";
+
+        } catch (err) {
+            console.error(err);
+            showToast({ message: `Error uploading books: ${err}`, type: "alert-error" });
+            setLoading({ loading: false, percent: 0, uploadedMB: 0, totalMB });
+        }
     };
 
     useEffect(() => {
